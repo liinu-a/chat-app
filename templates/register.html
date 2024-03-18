@@ -1,0 +1,27 @@
+{% if error == 'username_length' %}
+<p>Username must be 1-20 characters long.</p>
+
+{% elif error == 'password_length' %}
+<p>Password is shorter than 8 characters or exceeds the length limit.</p>
+
+{% elif error == 'password_match' %}
+<p>Passwords do not match.</p>
+
+{% elif error == 'not_successful' %}
+<p>Registration was not successful, perhaps try another username.</p>
+{% endif %}
+
+<form action="/register", method="POST">
+    Username:<br>
+    <input type="text" name="username"><br>
+
+    Password:<br>
+    <input type="password" name="password_1"><br>
+
+    Repeat password:<br>
+    <input type="password" name="password_2"><br>
+
+    <input type="submit" value="Register">
+</form>
+
+<a href="/">Go back</a>
