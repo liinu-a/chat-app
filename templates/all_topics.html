@@ -1,0 +1,17 @@
+<a href="/">Front page</a> |
+
+{% if session.user_id %}
+<a href="/logout">Log Out</a><br>
+{% else %}
+<a href="/login">Log In</a><br>
+{% endif %}
+
+{% for topic in topics %}
+<a href="/topic/{{ topic[1] }}">{{ topic[1] }}</a><br>
+{% endfor %}
+
+{% if is_admin %}
+<a href="/add_topic">Add a topic</a> | <a href="/remove_topic">Remove a topic</a>
+{% endif %}
+
+<a href="/">Go back</a>

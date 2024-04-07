@@ -1,0 +1,10 @@
+<a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
+
+<form action="/change_username", method="POST">
+    Write your new username:<br>
+    <input type="text" name="username"><br>
+    <input type="submit" value="Change">
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+</form><br>
+
+<a href="/user_settings">Go back</a>

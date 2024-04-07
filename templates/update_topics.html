@@ -1,0 +1,22 @@
+<a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
+
+<form action="/{{ action }}_topic", method="POST">
+
+    {% if action == 'add' %}
+    Topic:<br>
+    <input type="text" name="topic" minlength="1" maxlength="20"><br>
+    <input type="submit" value="Add">
+
+    {% elif action == 'remove' %}
+    Topic to remove:<br>
+    {% for topic in topics %}
+    <input type="radio" name="topic" value="{{ topic[0] }}">{{ topic[0] }}<br>
+    {% endfor %}
+    
+    <input type="submit" value="Remove">
+    {% endif %}
+
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+</form>
+
+<a href="/all_topics">Go back</a>
