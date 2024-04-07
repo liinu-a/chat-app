@@ -23,3 +23,20 @@ An application where users can participate in conversations under different topi
 * Admins can add or remove topics.
 
 The appearance of the application and a lot of its functions are still incomplete.
+
+How to use the application locally:
+
+Clone this repository to your computer and move to its root directory. Create a .env-file and specify its contents as follows:
+    DATABASE_URL=<local-address-of-the-database>
+    SECRET_KEY=<secret-key>
+
+Activate the virtual environment and install the applications dependencies with the commands
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r ./requirements.txt
+
+To define the schema of the database use the command
+    psql < schema.sql
+
+Now you should be able to run the application with the command
+    flask run
