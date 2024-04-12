@@ -10,7 +10,7 @@
     {% elif action == 'remove' %}
     Topic to remove:<br>
     {% for topic in topics %}
-    <input type="radio" name="topic" value="{{ topic[0] }}">{{ topic[0] }}<br>
+    <input type="radio" name="topic" value="{{ topic[1] }}">{{ topic[1] }}<br>
     {% endfor %}
     
     <input type="submit" value="Remove">

@@ -2,6 +2,7 @@ from app import app
 from flask import render_template, request, session, redirect
 import users, topics, messages, threads
 
+
 @app.route('/')
 def index():
     tpcs = topics.get_topics()[0:5]
@@ -17,8 +18,8 @@ def login():
         password = request.form['password']
 
         if not users.login(username, password):
-            error = 'Wrong username or password.'
-            return render_template('error.html', error=error)
+            errors = ['Wrong username or password.']
+            return render_template('error.html', errors=errors)
         return redirect('/')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -31,18 +32,20 @@ def register():
         password_1 = request.form['password_1']
         password_2 = request.form['password_2']
 
-        error = None
+        errors = []
         if len(username) < 1 or 20 < len(username):
-            error = 'Username must be 1-20 characters.'
-        elif len(password_1) < 6:
-            error = 'Password must be at least 6 characters.'
-        elif password_1 != password_2:
-            error = 'Passwords do not match.'
-        elif not users.register(username, password_1):
-            error = 'Registration unsuccessful, username may be unavailable.'
+            errors.append('Username must be 1-20 characters.')
+        if len(password_1) < 6:
+            errors.append('Password must be at least 6 characters.')
+        if password_1 != password_2:
+            errors.append('Passwords do not match.')
+        if len(errors) != 0:
+            return render_template('error.html', errors=errors)
+        
+        if not users.register(username, password_1):
+            errors.append('Registration unsuccessful, username may be unavailable.')
+            return render_template('error.html', errors=errors)
 
-        if error:
-            return render_template('error.html', error=error)
         return redirect('/')
     
 @app.route('/user_settings')
@@ -59,14 +62,14 @@ def change_username():
         users.check_csrf()
         username = request.form['username']
 
-        error = None
+        errors = []
         if len(username) < 1 or 20 < len(username):
-            error = 'Username must be 1-20 characters.'
+            errors.append('Username must be 1-20 characters.')
         elif not users.change_username(username):
-            error = 'Error, username may be unavailable.'
-
-    if error:
-        return render_template('error.html', error=error)
+            errors.append('Error, username may be unavailable.')
+        if len(errors) != 0:
+            return render_template('error.html', errors=errors)
+        
     return redirect('/')
 
 @app.route('/confirmation/<action>')
@@ -110,8 +113,8 @@ def update_topics(action):
             topic = request.form['topic'].capitalize()
 
             if not topics.add_topic(topic):
-                error = 'Topic already exists.'
-                return render_template('error.html', error=error)
+                errors = ['Topic already exists.']
+                return render_template('error.html', errors=errors)
         
         elif action == 'remove':
             remove = request.form['topic']
@@ -121,33 +124,70 @@ def update_topics(action):
 
 @app.route('/start_thread', methods=['GET', 'POST'])
 def start_thread():
+    try:
+        session['user_id']
+    except:
+        errors = ['You have not logged in.']
+        return render_template('error.html', errors=errors)
+    
     if request.method == 'GET':
         tpcs = topics.get_topics()
-        return render_template('start_thread.html', topics=tpcs)
+        return render_template('add.html', topics=tpcs, add='thread')
     
     if request.method == 'POST':
         users.check_csrf()
         title = request.form['title']
         message = request.form['message']
 
-        error = None
+        errors = []
         if 1 > len(title) or 20 < len(title):
-            error = 'Title must be 1-20 characters.'
-        elif len(message) > 10000:
-            error = 'Message exceeds the length limit.'
-        elif 'topic' not in request.form:
-            error = "You haven't chosen a topic."
-
-        if error:
-            return render_template('error.html', error=error)
+            errors.append('Title must be 1-20 characters.')
+        if len(message) > 10000:
+            errors.append('Message exceeds the length limit.')
+        if 'topic' not in request.form:
+            errors.append("You haven't chosen a topic.")
+        if len(errors) != 0:
+            return render_template('error.html', errors=errors)
         
         topic_id = request.form['topic']
         message_id = messages.add_message(message)
         threads.add_thread(topic_id, message_id, title)
 
         return redirect('/')
-        
-@app.route('/topic/<topic>')
-def topic_threads(topic):
-    thrds = threads.get_threads(topic)
-    return render_template('threads.html', topic=topic, threads=thrds)
+
+@app.route('/topic/<topic>/<order_by>/<limit>/<scroll_to>')
+def topic_threads(topic, order_by, limit, scroll_to):
+    limit = int(limit)
+    thrds = threads.get_threads(topic, order_by, limit)
+    try:
+        is_admin = users.get_role()
+    except:
+        is_admin = False
+
+    if not thrds or thrds[0][7] <= limit:
+        thrds_left = False
+    else:
+        thrds_left = True
+
+    return render_template('threads.html', topic=topic, threads=thrds, order_by=order_by, limit=limit, 
+                           scroll_to=scroll_to, thrds_left=thrds_left, is_admin=is_admin)
+
+
+@app.route('/topic/<topic>/<thread_id>/<order_by>/<limit>/<scroll_to>')
+def thread(topic, thread_id, order_by, limit, scroll_to):
+    limit = int(limit)
+    thread = threads.get_thread(thread_id)
+    replies = messages.get_replies(thread_id)
+    try:
+        is_admin = users.get_role()
+    except:
+        is_admin = False
+
+    if thread[5] <= limit:
+        replies_left = False
+    else:
+        replies_left = True
+
+    return render_template('thread.html', topic=topic, thread_id=thread_id, thread=thread, replies=replies, 
+                           order_by=order_by, limit=limit, scroll_to=scroll_to, replies_left=replies_left, 
+                           is_admin=is_admin)

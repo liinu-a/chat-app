@@ -2,7 +2,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username TEXT UNIQUE,
     password TEXT,
-    created_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
     is_admin BOOLEAN
 );
 
@@ -15,7 +15,7 @@ CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users (id) ON DELETE CASCADE,
     message TEXT,
-    date TIMESTAMP
+    date TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE threads (
@@ -25,14 +25,9 @@ CREATE TABLE threads (
     title TEXT
 );
 
-CREATE TABLE subthreads (
+CREATE TABLE replies (
     id SERIAL PRIMARY KEY,
-    parent_msg_id INTEGER REFERENCES messages (id) ON DELETE CASCADE,
-    child_msg_id INTEGER REFERENCES messages (id) ON DELETE CASCADE
-);
-
-CREATE TABLE pinned_threads (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users (id) ON DELETE CASCADE,
-    thread_id INTEGER REFERENCES threads (id) ON DELETE CASCADE
+    thread_id INTEGER REFERENCES threads (id) ON DELETE CASCADE,
+    message_id INTEGER REFERENCES messages (id) ON DELETE CASCADE,
+    reply_to INTEGER REFERENCES messages (id) ON DELETE CASCADE
 );

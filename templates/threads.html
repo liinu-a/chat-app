@@ -1,16 +1,43 @@
 <a href="/">Front page</a> | 
 {% if session.user_id %}
-<a href="/logout">Log Out</a><br>
+    <a href="/logout">Log Out</a><br>
 {% else %}
-<a href="/login">Log In</a><br>
+    <a href="/login">Log In</a><br>
 {% endif %}
 
 {{ topic }}<br>
 
+Sort by:
+<a href="/topic/{{ topic }}/most_recent/25/None">Most recent</a> | 
+<a href="/topic/{{ topic }}/oldest/25/None">Oldest</a> | 
+<a href="/topic/{{ topic }}/most_replies/25/None">Most replies</a><br>
+
 {% for thread in threads %}
-{{ thread[1] }} | {{ thread[4].strftime("%Y-%m-%d %H:%M") }}<br>
-{{ thread[2] }}<br>
-{{ thread[3] }}<br>
-replies {{ thread[5] }}
-<hr>
+    <div id="{{ thread[3] }}">
+        {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
+        <a href="/topic/{{ topic }}/{{ thread[3] }}/most_recent/25/None">{{ thread[2] }}</a><br>
+        {{ thread[4] }}<br>
+        replies {{ thread[6] }}<br>
+
+        {% if session.user_id %}
+            {% if thread[0] == session.user_id or is_admin%}
+                <a href="/remove_thread">Remove</a><br>
+            {% endif %}
+        {% endif %}
+    </div>
+    <hr>
 {% endfor %}
+
+{% if thrds_left %}
+    <a href="/topic/{{ topic }}/{{ order_by }}/{{ limit+25 }}/{{ threads[-1][3] }}">
+        Load more
+    </a>
+{% endif %}
+
+{% if scroll_to %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.location.hash = '#{{ scroll_to }}';
+        });
+    </script>
+{% endif %}

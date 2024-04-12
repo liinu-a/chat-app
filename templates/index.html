@@ -1,14 +1,15 @@
 {% if session.user_id %}
-<h1>Hello {{ session.username }}!</h1>
+    <h1>Hello {{ session.username }}!</h1>
 
-<a href="/user_settings">User settings</a> | <a href="/logout">Log Out</a><br>
-<a href="/start_thread">Start a thread</a><br>
+    <a href="/user_settings">User settings</a> | <a href="/logout">Log Out</a><br>
 {% else %}
-<a href="/login">Log In</a><br>
+    <a href="/login">Log In</a><br>
 {% endif %}
+
+<a href="/start_thread">Start a thread</a><br>
 
 Topics:<br>
 {% for topic in topics %}
-<a href="/topic/{{ topic[1] }}">{{ topic[1] }}</a><br>
+    <a href="/topic/{{ topic[1] }}/most_recent/25/None">{{ topic[1] }}</a><br>
 {% endfor %}
 <a href="/all_topics">More</a>
