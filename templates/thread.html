@@ -6,13 +6,15 @@
 {% endif %}
 
 <div>
-    {{ thread[1] }} | {{ thread[4].strftime("%d-%m-%Y %H:%M") }}<br>
+    {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
     {{ thread[2] }}<br>
-    {{ thread[3] }}<br>
-    <a href="">reply</a> {{ thread[5] }}<br>
+    {{ thread[4] }}<br>
+    <a href="/reply/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/thread/{{ thread[3] }}">
+        reply
+    </a> | messages {{ thread[6] }}<br>
 
     {% if session.user_id %}
-        {% if thread[0] == session.user_id or is_admin%}
+        {% if thread[0] == session.user_id or is_admin %}
             <a href="/remove_thread">Remove</a><br>
         {% endif %}
     {% endif %}
@@ -20,24 +22,41 @@
 <hr>
 
 Sort by:
-<a href="/topic/{{ topic }}/{{ thread_id }}/most_recent/25/None">Most recent</a> | 
-<a href="/topic/{{ topic }}/{{ thread_id }}/oldest/25/None">Oldest</a> | 
-<a href="/topic/{{ topic }}/{{ thread_id }}/most_replies/25/None">Most replies</a><br>
+<a href="/topic/{{ topic }}/thread/{{ thread_id }}/most_recent/25">Most recent</a> | 
+<a href="/topic/{{ topic }}/thread/{{ thread_id }}/oldest/25">Oldest</a> | 
+<a href="/topic/{{ topic }}/thread/{{ thread_id }}/most_replies/25">Most replies</a><br>
 
 
 
 {% for reply in replies %}
     <div id="{{ reply[2] }}">
 
-        # TODO
+        {% if reply[9] != thread[3] %}
+            <div class="reply_to" style="border: 2px solid black">
+                {{ reply[6] }} | {{ reply[8].strftime("%d-%m-%Y %H:%M") }}<br>
+                {{ reply[7] }}<br>
+            </div>
+        {% endif %}
 
-        <a href="">reply</a> {{ reply[4] }}<br>
+        {{ reply[1] }} | {{ reply[4].strftime("%d-%m-%Y %H:%M") }}<br>
+        {{ reply[3] }}<br>
+
+        <a href="/reply/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/comment/{{ reply[2] }}">
+            reply
+        </a> {{ reply[5] }}<br>
+
+        {% if session.user_id %}
+            {% if reply[0] == session.user_id or is_admin %}
+                <a href="/remove_reply">Remove</a><br>
+            {% endif %}
+        {% endif %}
+        <hr>
     </div>
 {% endfor %}
 
 
 {% if replies_left %}
-    <a href="/topic/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit+25 }}/{{ replies[-1][2] }}">
+    <a href="/topic/{{ topic }}/thread/{{ thread_id }}/{{ order_by }}/{{ limit+25 }}/{{ replies[-1][2] }}">
         Load more
     </a>
 {% endif %}

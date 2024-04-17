@@ -8,19 +8,19 @@
 {{ topic }}<br>
 
 Sort by:
-<a href="/topic/{{ topic }}/most_recent/25/None">Most recent</a> | 
-<a href="/topic/{{ topic }}/oldest/25/None">Oldest</a> | 
-<a href="/topic/{{ topic }}/most_replies/25/None">Most replies</a><br>
+<a href="/topic/{{ topic }}/most_recent/25">Most recent</a> | 
+<a href="/topic/{{ topic }}/oldest/25">Oldest</a> | 
+<a href="/topic/{{ topic }}/most_replies/25">Most replies</a><br>
 
 {% for thread in threads %}
     <div id="{{ thread[3] }}">
         {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
-        <a href="/topic/{{ topic }}/{{ thread[3] }}/most_recent/25/None">{{ thread[2] }}</a><br>
+        <a href="/topic/{{ topic }}/thread/{{ thread[3] }}/most_recent/25">{{ thread[2] }}</a><br>
         {{ thread[4] }}<br>
-        replies {{ thread[6] }}<br>
+        messages {{ thread[6] }}<br>
 
         {% if session.user_id %}
-            {% if thread[0] == session.user_id or is_admin%}
+            {% if thread[0] == session.user_id or is_admin %}
                 <a href="/remove_thread">Remove</a><br>
             {% endif %}
         {% endif %}

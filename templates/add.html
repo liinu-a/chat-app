@@ -4,8 +4,16 @@
     <form action="/start_thread", method="POST">
         Title:<br>
         <input type="text" name="title" minlength="1" maxlength="20"><br>
-{% elif add == 'message' %}
-    <form action="/add_message/{{ parent_msg_id }}", method="POST">
+
+{% elif add == 'reply' %}
+    <form action="/reply/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/{{ reply_to }}/{{ msg_id }}", 
+    method="POST">
+        Reply to:<br>
+        {{ message[0] }} | {{ message[2].strftime("%d-%m-%Y %H:%M") }}<br>
+        {% if reply_to == 'thread' %}
+            {{ message[3] }}<br>
+        {% endif %}
+        {{ message[1] }}<br>
 {% endif %}
 
     Message:<br>
@@ -14,11 +22,13 @@
     {% if add == 'thread' %}
         Choose a topic:<br>
         {% for tpc in topics %}
-            <input type="radio" name="topic" value="{{ tpc[0] }}">{{ tpc[1] }}<br>
+            {% set value = (tpc[0], tpc[1]) %}
+            <input type="radio" name="topic" value="{{ tpc[0] }};{{ tpc[1] }}">{{ tpc[1] }}<br>
         {% endfor %}
         <input type="submit" value="Start">
-    {% elif add == 'message' %}
-        <input type="submit" value="Send">
+
+    {% elif add == 'reply' %}
+        <input type="submit" value="Reply">
     {% endif %}
     
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">

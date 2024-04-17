@@ -31,3 +31,9 @@ CREATE TABLE replies (
     message_id INTEGER REFERENCES messages (id) ON DELETE CASCADE,
     reply_to INTEGER REFERENCES messages (id) ON DELETE CASCADE
 );
+
+CREATE TABLE pinned_threads (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users (id) ON DELETE CASCADE,
+    thread_id INTEGER REFERENCES threads (id) ON DELETE CASCADE
+);

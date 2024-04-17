@@ -94,10 +94,7 @@ def logout():
 @app.route('/all_topics')
 def all_topics():
     tpcs = topics.get_topics()
-    try:
-        is_admin = users.get_role()
-    except:
-        is_admin = False
+    is_admin = users.check_role()
     return render_template('all_topics.html', topics=tpcs, is_admin=is_admin)
     
 @app.route('/<action>_topic', methods=['GET', 'POST'])
@@ -149,20 +146,18 @@ def start_thread():
         if len(errors) != 0:
             return render_template('error.html', errors=errors)
         
-        topic_id = request.form['topic']
+        topic_id, topic = request.form['topic'].split(';')
         message_id = messages.add_message(message)
-        threads.add_thread(topic_id, message_id, title)
+        thread_id = threads.add_thread(topic_id, message_id, title)
 
-        return redirect('/')
-
+        return redirect(f'/topic/{topic}/thread/{thread_id}/most_recent/25')
+    
+@app.route('/topic/<topic>/<order_by>/<limit>')
 @app.route('/topic/<topic>/<order_by>/<limit>/<scroll_to>')
-def topic_threads(topic, order_by, limit, scroll_to):
+def topic_threads(topic, order_by, limit, scroll_to=None):
     limit = int(limit)
     thrds = threads.get_threads(topic, order_by, limit)
-    try:
-        is_admin = users.get_role()
-    except:
-        is_admin = False
+    is_admin = users.check_role()
 
     if not thrds or thrds[0][7] <= limit:
         thrds_left = False
@@ -172,18 +167,15 @@ def topic_threads(topic, order_by, limit, scroll_to):
     return render_template('threads.html', topic=topic, threads=thrds, order_by=order_by, limit=limit, 
                            scroll_to=scroll_to, thrds_left=thrds_left, is_admin=is_admin)
 
-
-@app.route('/topic/<topic>/<thread_id>/<order_by>/<limit>/<scroll_to>')
-def thread(topic, thread_id, order_by, limit, scroll_to):
+@app.route('/topic/<topic>/thread/<thread_id>/<order_by>/<limit>')
+@app.route('/topic/<topic>/thread/<thread_id>/<order_by>/<limit>/<scroll_to>')
+def thread(topic, thread_id, order_by, limit, scroll_to=None):
     limit = int(limit)
     thread = threads.get_thread(thread_id)
-    replies = messages.get_replies(thread_id)
-    try:
-        is_admin = users.get_role()
-    except:
-        is_admin = False
+    replies = messages.get_replies(thread_id, order_by, limit)
+    is_admin = users.check_role()
 
-    if thread[5] <= limit:
+    if thread[6] <= limit:
         replies_left = False
     else:
         replies_left = True
@@ -191,3 +183,39 @@ def thread(topic, thread_id, order_by, limit, scroll_to):
     return render_template('thread.html', topic=topic, thread_id=thread_id, thread=thread, replies=replies, 
                            order_by=order_by, limit=limit, scroll_to=scroll_to, replies_left=replies_left, 
                            is_admin=is_admin)
+
+
+@app.route('/reply/<topic>/<thread_id>/<order_by>/<limit>/<reply_to>/<msg_id>', methods=['GET', 'POST'])
+def reply(topic, thread_id, order_by, limit, reply_to, msg_id):
+    try:
+        session['user_id']
+    except:
+        errors = ['You have not logged in.']
+        return render_template('error.html', errors=errors)
+
+    if request.method == 'GET':
+        if reply_to == 'thread':
+            message = messages.get_init_message(thread_id)
+        elif reply_to == 'comment':
+            message = messages.get_message(msg_id)
+
+        return render_template('add.html', message=message, topic=topic, thread_id=thread_id,
+                               order_by=order_by, limit=limit, reply_to=reply_to, msg_id=msg_id, add='reply')
+    
+    if request.method == 'POST':
+        users.check_csrf()
+        message = request.form['message']
+
+        errors = []
+        if len(message) > 10000:
+            errors.append('Message exceeds the length limit.')
+        if len(message) < 1:
+            errors.append('No message.')
+        if len(errors) != 0:
+            return render_template('error.html', errors=errors)
+        
+        reply_msg_id = messages.add_message(message)
+        messages.add_reply(thread_id, reply_msg_id, msg_id)
+
+        return redirect(f'/topic/{topic}/thread/{thread_id}/{order_by}/{limit}')
+        
