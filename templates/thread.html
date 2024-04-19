@@ -14,9 +14,21 @@
     </a> | messages {{ thread[6] }}<br>
 
     {% if session.user_id %}
+
+    <button onclick="pinThread('{{ thread_id }}', 'pin_{{ thread_id }}')">
+        {% if thread[7] %}
+            <i class="fa-solid fa-thumbtack" data-is-pinned='true' 
+               style="color: #1c1c1c;" id="pin_{{ thread_id }}"></i>
+        {% else %}
+            <i class="fa-solid fa-thumbtack" data-is-pinned='false' 
+               style="color: #9e9e9e;" id="pin_{{ thread_id }}"></i>
+        {% endif %}
+        </button>
+
         {% if thread[0] == session.user_id or is_admin %}
             <a href="/remove_thread">Remove</a><br>
         {% endif %}
+        
     {% endif %}
 </div>
 <hr>
@@ -68,3 +80,31 @@ Sort by:
         });
     </script>
 {% endif %}
+
+<script>
+    function pinThread(thread_id, pin_id) {
+        let target = document.getElementById(pin_id);
+        let pinned = target.dataset.isPinned === 'true';
+
+        let action = null;
+        if (pinned) {
+            action = 'remove';
+        } else {
+            action = 'add';
+        }
+
+        fetch(`/pin/${thread_id}/${action}`)
+        .then(response => response.json()) 
+        .then(data => console.log(data)) 
+        .catch(error => console.error(error));
+
+        if (action == 'add') {
+            target.style.color = '#1c1c1c';
+        } else if (action == 'remove') {
+            target.style.color = '#9e9e9e';
+        }
+        target.dataset.isPinned = `${!pinned}`;
+    }
+</script>
+
+<script src="https://kit.fontawesome.com/4c9a1b3eaf.js" crossorigin="anonymous"></script>

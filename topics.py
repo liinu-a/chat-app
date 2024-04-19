@@ -7,6 +7,11 @@ def get_topics():
     result = db.session.execute(text(sql)).fetchall()
     return result
 
+def get_topic_id(topic):
+    sql = 'SELECT id FROM topics WHERE topic=:topic'
+    result = db.session.execute(text(sql), {'topic':topic}).fetchone()[0]
+    return result
+
 def add_topic(topic):
     try:
         sql = 'INSERT INTO topics (topic) VALUES (:topic)'

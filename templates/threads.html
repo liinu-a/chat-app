@@ -6,8 +6,19 @@
 {% endif %}
 
 {{ topic }}<br>
+{% if topic == 'All' %}
+    <a href="/start_thread">Start a thread</a><br>
+{% elif topic != 'Pinned' %}
+    <a href="/start_thread/{{ topic }}">Start a thread under {{ topic }}</a><br>
+{% endif %}
 
 Sort by:
+
+{% if topic == 'Pinned' %}
+    <a href="/topic/{{ topic }}/newest_pin/25">Newly pinned</a> | 
+    <a href="/topic/{{ topic }}/oldest_pin/25">Oldest pinned</a> |
+{% endif %}
+
 <a href="/topic/{{ topic }}/most_recent/25">Most recent</a> | 
 <a href="/topic/{{ topic }}/oldest/25">Oldest</a> | 
 <a href="/topic/{{ topic }}/most_replies/25">Most replies</a><br>
@@ -19,7 +30,19 @@ Sort by:
         {{ thread[4] }}<br>
         messages {{ thread[6] }}<br>
 
+
         {% if session.user_id %}
+
+            <button onclick="pinThread('{{ thread[3] }}', 'pin_{{ thread[3] }}')">
+            {% if thread[8] %}
+                <i class="fa-solid fa-thumbtack" data-is-pinned='true' 
+                   style="color: #1c1c1c;" id="pin_{{ thread[3] }}"></i>
+            {% else %}
+                <i class="fa-solid fa-thumbtack" data-is-pinned='false' 
+                   style="color: #9e9e9e;" id="pin_{{ thread[3] }}"></i>
+            {% endif %}
+            </button>
+
             {% if thread[0] == session.user_id or is_admin %}
                 <a href="/remove_thread">Remove</a><br>
             {% endif %}
@@ -41,3 +64,31 @@ Sort by:
         });
     </script>
 {% endif %}
+
+<script>
+    function pinThread(thread_id, pin_id) {
+        let target = document.getElementById(pin_id);
+        let pinned = target.dataset.isPinned === 'true';
+
+        let action = null;
+        if (pinned) {
+            action = 'remove';
+        } else {
+            action = 'add';
+        }
+
+        fetch(`/pin/${thread_id}/${action}`)
+        .then(response => response.json()) 
+        .then(data => console.log(data)) 
+        .catch(error => console.error(error));
+
+        if (action == 'add') {
+            target.style.color = '#1c1c1c';
+        } else if (action == 'remove') {
+            target.style.color = '#9e9e9e';
+        }
+        target.dataset.isPinned = `${!pinned}`;
+    }
+</script>
+
+<script src="https://kit.fontawesome.com/4c9a1b3eaf.js" crossorigin="anonymous"></script>

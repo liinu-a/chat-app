@@ -2,14 +2,29 @@
     <h1>Hello {{ session.username }}!</h1>
 
     <a href="/user_settings">User settings</a> | <a href="/logout">Log Out</a><br>
+
+    <a href="/topic/Pinned/newest_pin/25">Pinned</a>
+
 {% else %}
     <a href="/login">Log In</a><br>
 {% endif %}
 
-<a href="/start_thread">Start a thread</a><br>
+<form action="/search_thread" method="GET">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" name="query" placeholder="Search a thread">
+    <button type="submit">Search</button>
+</form><br>
+
+{% if topics %}
+    <a href="/start_thread">Start a thread</a><br>
+{% endif %}
+
+<a href="/topic/All/most_recent/25">All</a><br>
 
 Topics:<br>
 {% for topic in topics %}
     <a href="/topic/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a><br>
 {% endfor %}
 <a href="/all_topics">More</a>
+
+<script src="https://kit.fontawesome.com/4c9a1b3eaf.js" crossorigin="anonymous"></script>

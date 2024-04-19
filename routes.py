@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template, request, session, redirect
+from flask import render_template, request, session, redirect, json
 import users, topics, messages, threads
 
 
@@ -120,7 +120,8 @@ def update_topics(action):
         return redirect('/all_topics')
 
 @app.route('/start_thread', methods=['GET', 'POST'])
-def start_thread():
+@app.route('/start_thread/<topic>', methods=['GET', 'POST'])
+def start_thread(topic=None):
     try:
         session['user_id']
     except:
@@ -128,8 +129,13 @@ def start_thread():
         return render_template('error.html', errors=errors)
     
     if request.method == 'GET':
-        tpcs = topics.get_topics()
-        return render_template('add.html', topics=tpcs, add='thread')
+        topics_data = None
+        if not topic:
+            topics_data = topics.get_topics()
+        else:
+            topics_data = topics.get_topic_id(topic)
+
+        return render_template('add.html', topic=topic, topics_data=topics_data, add='thread')
     
     if request.method == 'POST':
         users.check_csrf()
@@ -154,10 +160,16 @@ def start_thread():
     
 @app.route('/topic/<topic>/<order_by>/<limit>')
 @app.route('/topic/<topic>/<order_by>/<limit>/<scroll_to>')
-def topic_threads(topic, order_by, limit, scroll_to=None):
+def thread_list(topic, order_by, limit, scroll_to=None):
     limit = int(limit)
-    thrds = threads.get_threads(topic, order_by, limit)
     is_admin = users.check_role()
+    match topic:
+        case 'All':
+            thrds = threads.get_all_threads(order_by, limit)
+        case 'Pinned':
+            thrds = threads.pinned(order_by, limit)
+        case _:
+            thrds = threads.get_threads(topic, order_by, limit)
 
     if not thrds or thrds[0][7] <= limit:
         thrds_left = False
@@ -166,6 +178,13 @@ def topic_threads(topic, order_by, limit, scroll_to=None):
 
     return render_template('threads.html', topic=topic, threads=thrds, order_by=order_by, limit=limit, 
                            scroll_to=scroll_to, thrds_left=thrds_left, is_admin=is_admin)
+
+
+@app.route('/search_thread')
+def search_thread():
+    query = request.args['query']
+    thrds = threads.search(query)
+
 
 @app.route('/topic/<topic>/thread/<thread_id>/<order_by>/<limit>')
 @app.route('/topic/<topic>/thread/<thread_id>/<order_by>/<limit>/<scroll_to>')
@@ -218,4 +237,12 @@ def reply(topic, thread_id, order_by, limit, reply_to, msg_id):
         messages.add_reply(thread_id, reply_msg_id, msg_id)
 
         return redirect(f'/topic/{topic}/thread/{thread_id}/{order_by}/{limit}')
+
+@app.route('/pin/<thread_id>/<action>')
+def pin(thread_id, action):
+    if action == 'add':
+        threads.pin(thread_id)
+    elif action == 'remove':
+        threads.unpin(thread_id)
+    return {'result': 'success'}
         

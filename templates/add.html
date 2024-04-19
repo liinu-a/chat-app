@@ -20,11 +20,14 @@
     <textarea name="message" maxlength="10000"></textarea><br>
 
     {% if add == 'thread' %}
-        Choose a topic:<br>
-        {% for tpc in topics %}
-            {% set value = (tpc[0], tpc[1]) %}
-            <input type="radio" name="topic" value="{{ tpc[0] }};{{ tpc[1] }}">{{ tpc[1] }}<br>
-        {% endfor %}
+        {% if topic %}
+            <input type="hidden" name="topic" value="{{ topics_data }};{{ topic }}">
+        {% else %}
+            Choose a topic:<br>
+            {% for tpc in topics_data %}
+                <input type="radio" name="topic" value="{{ tpc[0] }};{{ tpc[1] }}">{{ tpc[1] }}<br>
+            {% endfor %}
+        {% endif %}
         <input type="submit" value="Start">
 
     {% elif add == 'reply' %}
