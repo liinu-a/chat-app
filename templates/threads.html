@@ -5,28 +5,28 @@
     <a href="/login">Log In</a><br>
 {% endif %}
 
-{{ topic }}<br>
-{% if topic == 'All' %}
+{{ category }}<br>
+{% if category == 'all' or category == 'search' %}
     <a href="/start_thread">Start a thread</a><br>
-{% elif topic != 'Pinned' %}
-    <a href="/start_thread/{{ topic }}">Start a thread under {{ topic }}</a><br>
+{% elif category != 'pinned' %}
+    <a href="/start_thread/{{ category }}">Start a thread under {{ category }}</a><br>
 {% endif %}
 
 Sort by:
 
-{% if topic == 'Pinned' %}
-    <a href="/topic/{{ topic }}/newest_pin/25">Newly pinned</a> | 
-    <a href="/topic/{{ topic }}/oldest_pin/25">Oldest pinned</a> |
+{% if category == 'pinned' %}
+    <a href="/threads/{{ category }}/newest_pin/25">Newly pinned</a> | 
+    <a href="/threads/{{ category }}/oldest_pin/25">Oldest pinned</a> |
 {% endif %}
 
-<a href="/topic/{{ topic }}/most_recent/25">Most recent</a> | 
-<a href="/topic/{{ topic }}/oldest/25">Oldest</a> | 
-<a href="/topic/{{ topic }}/most_replies/25">Most replies</a><br>
+<a href="/threads/{{ category }}/most_recent/25">Most recent</a> | 
+<a href="/threads/{{ category }}/oldest/25">Oldest</a> | 
+<a href="/threads/{{ category }}/most_replies/25">Most replies</a><br>
 
 {% for thread in threads %}
     <div id="{{ thread[3] }}">
         {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
-        <a href="/topic/{{ topic }}/thread/{{ thread[3] }}/most_recent/25">{{ thread[2] }}</a><br>
+        <a href="/thread/{{ category }}/{{ thread[3] }}/most_recent/25">{{ thread[2] }}</a><br>
         {{ thread[4] }}<br>
         messages {{ thread[6] }}<br>
 
@@ -44,7 +44,7 @@ Sort by:
             </button>
 
             {% if thread[0] == session.user_id or is_admin %}
-                <a href="/remove_thread">Remove</a><br>
+                <a href="/confirmation/delete_message/{{ thread[9] }}/threads;{{ category }};{{ order_by }};25">Remove</a><br>
             {% endif %}
         {% endif %}
     </div>
@@ -52,10 +52,11 @@ Sort by:
 {% endfor %}
 
 {% if thrds_left %}
-    <a href="/topic/{{ topic }}/{{ order_by }}/{{ limit+25 }}/{{ threads[-1][3] }}">
-        Load more
+    <a href="/threads/{{ category }}/{{ order_by }}/{{ limit+25 }}/{{ threads[-1][3] }}">
+    Load more
     </a>
 {% endif %}
+
 
 {% if scroll_to %}
     <script>

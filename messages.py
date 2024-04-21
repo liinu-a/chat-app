@@ -53,3 +53,8 @@ def add_reply(thread_id, message_id, reply_to):
                  VALUES (:thread_id, :message_id, :reply_to)'''
     db.session.execute(text(sql), {'thread_id':thread_id, 'message_id':message_id, 'reply_to':reply_to})
     db.session.commit()
+
+def delete_message(message_id):
+    sql = 'DELETE FROM messages WHERE id=:message_id'
+    db.session.execute(text(sql), {'message_id':message_id})
+    db.session.commit()

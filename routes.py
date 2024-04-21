@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template, request, session, redirect, json
+from flask import render_template, request, session, redirect
 import users, topics, messages, threads
 
 
@@ -73,18 +73,29 @@ def change_username():
     return redirect('/')
 
 @app.route('/confirmation/<action>')
-def confirmation(action):
+@app.route('/confirmation/<action>/<message_id>/<path_back>')
+def confirmation(action, message_id=None, path_back=None):
     match action:
         case 'delete_account':
             message = 'Are you sure you want to delete your account? The deletion will be permanent.'
-    
-    return render_template('confirmation.html', message=message, action=action)
+        case 'delete_message':
+            message = 'Are you sure? The deletion will be permanent.'
+
+    return render_template('confirmation.html', message=message, action=action, message_id=message_id, 
+                           path_back=path_back)
 
 @app.route('/delete_account', methods=['POST'])
 def delete_account():
     users.check_csrf()
     users.delete_account()
     return redirect('/')
+
+@app.route('/delete_message/<message_id>/<path_back>', methods=['POST'])
+def remove_message(message_id, path_back='/'):
+    users.check_csrf()
+    messages.delete_message(message_id)
+    path = f"/{path_back.replace(';', '/')}"
+    return redirect(path)
 
 @app.route('/logout')
 def logout():
@@ -129,7 +140,6 @@ def start_thread(topic=None):
         return render_template('error.html', errors=errors)
     
     if request.method == 'GET':
-        topics_data = None
         if not topic:
             topics_data = topics.get_topics()
         else:
@@ -156,39 +166,39 @@ def start_thread(topic=None):
         message_id = messages.add_message(message)
         thread_id = threads.add_thread(topic_id, message_id, title)
 
-        return redirect(f'/topic/{topic}/thread/{thread_id}/most_recent/25')
-    
-@app.route('/topic/<topic>/<order_by>/<limit>')
-@app.route('/topic/<topic>/<order_by>/<limit>/<scroll_to>')
-def thread_list(topic, order_by, limit, scroll_to=None):
+        return redirect(f'/thread/{topic}/{thread_id}/most_recent/25')
+
+
+@app.route('/threads/<category>/<order_by>/<limit>')
+@app.route('/threads/<category>/<order_by>/<limit>/<scroll_to>')
+def thread_list(category, order_by, limit, scroll_to=None):
     limit = int(limit)
     is_admin = users.check_role()
-    match topic:
-        case 'All':
+    
+    match category:
+        case 'all':
             thrds = threads.get_all_threads(order_by, limit)
-        case 'Pinned':
+        case 'pinned':
             thrds = threads.pinned(order_by, limit)
+        case 'user':
+            pass
+        case 'search':
+            thrds = threads.search(order_by, limit)
         case _:
-            thrds = threads.get_threads(topic, order_by, limit)
+            thrds = threads.get_topic_threads(category, order_by, limit)
 
     if not thrds or thrds[0][7] <= limit:
         thrds_left = False
     else:
         thrds_left = True
 
-    return render_template('threads.html', topic=topic, threads=thrds, order_by=order_by, limit=limit, 
+    return render_template('threads.html', category=category, threads=thrds, order_by=order_by, limit=limit, 
                            scroll_to=scroll_to, thrds_left=thrds_left, is_admin=is_admin)
 
 
-@app.route('/search_thread')
-def search_thread():
-    query = request.args['query']
-    thrds = threads.search(query)
-
-
-@app.route('/topic/<topic>/thread/<thread_id>/<order_by>/<limit>')
-@app.route('/topic/<topic>/thread/<thread_id>/<order_by>/<limit>/<scroll_to>')
-def thread(topic, thread_id, order_by, limit, scroll_to=None):
+@app.route('/thread/<category>/<thread_id>/<order_by>/<limit>')
+@app.route('/thread/<category>/<thread_id>/<order_by>/<limit>/<scroll_to>')
+def thread(category, thread_id, order_by, limit, scroll_to=None):
     limit = int(limit)
     thread = threads.get_thread(thread_id)
     replies = messages.get_replies(thread_id, order_by, limit)
@@ -199,13 +209,13 @@ def thread(topic, thread_id, order_by, limit, scroll_to=None):
     else:
         replies_left = True
 
-    return render_template('thread.html', topic=topic, thread_id=thread_id, thread=thread, replies=replies, 
+    return render_template('thread.html', category=category, thread_id=thread_id, thread=thread, replies=replies, 
                            order_by=order_by, limit=limit, scroll_to=scroll_to, replies_left=replies_left, 
                            is_admin=is_admin)
 
 
-@app.route('/reply/<topic>/<thread_id>/<order_by>/<limit>/<reply_to>/<msg_id>', methods=['GET', 'POST'])
-def reply(topic, thread_id, order_by, limit, reply_to, msg_id):
+@app.route('/reply/<category>/<thread_id>/<order_by>/<limit>/<reply_to>/<msg_id>', methods=['GET', 'POST'])
+def reply(category, thread_id, order_by, limit, reply_to, msg_id):
     try:
         session['user_id']
     except:
@@ -218,7 +228,7 @@ def reply(topic, thread_id, order_by, limit, reply_to, msg_id):
         elif reply_to == 'comment':
             message = messages.get_message(msg_id)
 
-        return render_template('add.html', message=message, topic=topic, thread_id=thread_id,
+        return render_template('add.html', message=message, category=category, thread_id=thread_id,
                                order_by=order_by, limit=limit, reply_to=reply_to, msg_id=msg_id, add='reply')
     
     if request.method == 'POST':
@@ -236,7 +246,7 @@ def reply(topic, thread_id, order_by, limit, reply_to, msg_id):
         reply_msg_id = messages.add_message(message)
         messages.add_reply(thread_id, reply_msg_id, msg_id)
 
-        return redirect(f'/topic/{topic}/thread/{thread_id}/{order_by}/{limit}')
+        return redirect(f'/thread/{category}/{thread_id}/{order_by}/{limit}')
 
 @app.route('/pin/<thread_id>/<action>')
 def pin(thread_id, action):
@@ -245,4 +255,14 @@ def pin(thread_id, action):
     elif action == 'remove':
         threads.unpin(thread_id)
     return {'result': 'success'}
+
+@app.route('/search')
+def search():
+    query = request.args['query']
+    if not query:
+        errors = ['Searchbar is empty.']
+        return render_template('error.html', errors=errors)
+    session['query'] = query
+    return redirect(f'/threads/search/most_recent/25')
+
         

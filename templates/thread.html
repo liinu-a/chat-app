@@ -9,7 +9,7 @@
     {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
     {{ thread[2] }}<br>
     {{ thread[4] }}<br>
-    <a href="/reply/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/thread/{{ thread[3] }}">
+    <a href="/reply/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/thread/{{ thread[3] }}">
         reply
     </a> | messages {{ thread[6] }}<br>
 
@@ -26,7 +26,7 @@
         </button>
 
         {% if thread[0] == session.user_id or is_admin %}
-            <a href="/remove_thread">Remove</a><br>
+            <a href="/confirmation/delete_message/{{ thread[3] }}/threads;{{ category }};{{ order_by }};25">Remove</a><br>
         {% endif %}
         
     {% endif %}
@@ -34,9 +34,9 @@
 <hr>
 
 Sort by:
-<a href="/topic/{{ topic }}/thread/{{ thread_id }}/most_recent/25">Most recent</a> | 
-<a href="/topic/{{ topic }}/thread/{{ thread_id }}/oldest/25">Oldest</a> | 
-<a href="/topic/{{ topic }}/thread/{{ thread_id }}/most_replies/25">Most replies</a><br>
+<a href="/thread/{{ category }}/{{ thread_id }}/most_recent/25">Most recent</a> | 
+<a href="/thread/{{ category }}/{{ thread_id }}/oldest/25">Oldest</a> | 
+<a href="/thread/{{ category }}/{{ thread_id }}/most_replies/25">Most replies</a><br>
 
 
 
@@ -53,13 +53,13 @@ Sort by:
         {{ reply[1] }} | {{ reply[4].strftime("%d-%m-%Y %H:%M") }}<br>
         {{ reply[3] }}<br>
 
-        <a href="/reply/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/comment/{{ reply[2] }}">
+        <a href="/reply/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/comment/{{ reply[2] }}">
             reply
         </a> {{ reply[5] }}<br>
 
         {% if session.user_id %}
-            {% if reply[0] == session.user_id or is_admin %}
-                <a href="/remove_reply">Remove</a><br>
+            {% if reply[0] == session.user_id or is_admin or session.user_id == thread[0] %}
+                <a href="/confirmation/delete_message/{{ reply[2] }}/thread;{{ category }};{{ thread_id }};{{ order_by }};25">Remove</a><br>
             {% endif %}
         {% endif %}
         <hr>
@@ -68,7 +68,7 @@ Sort by:
 
 
 {% if replies_left %}
-    <a href="/topic/{{ topic }}/thread/{{ thread_id }}/{{ order_by }}/{{ limit+25 }}/{{ replies[-1][2] }}">
+    <a href="/thread/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit+25 }}/{{ replies[-1][2] }}">
         Load more
     </a>
 {% endif %}

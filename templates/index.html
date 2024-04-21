@@ -3,13 +3,13 @@
 
     <a href="/user_settings">User settings</a> | <a href="/logout">Log Out</a><br>
 
-    <a href="/topic/Pinned/newest_pin/25">Pinned</a>
+    <a href="/threads/pinned/newest_pin/25">Pinned</a>
 
 {% else %}
     <a href="/login">Log In</a><br>
 {% endif %}
 
-<form action="/search_thread" method="GET">
+<form action="/search" method="GET">
     <i class="fa-solid fa-magnifying-glass"></i>
     <input type="text" name="query" placeholder="Search a thread">
     <button type="submit">Search</button>
@@ -19,11 +19,11 @@
     <a href="/start_thread">Start a thread</a><br>
 {% endif %}
 
-<a href="/topic/All/most_recent/25">All</a><br>
+<a href="/threads/all/most_recent/25">All</a><br>
 
 Topics:<br>
 {% for topic in topics %}
-    <a href="/topic/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a><br>
+    <a href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a><br>
 {% endfor %}
 <a href="/all_topics">More</a>
 

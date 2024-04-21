@@ -6,7 +6,7 @@
         <input type="text" name="title" minlength="1" maxlength="20"><br>
 
 {% elif add == 'reply' %}
-    <form action="/reply/{{ topic }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/{{ reply_to }}/{{ msg_id }}", 
+    <form action="/reply/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/{{ reply_to }}/{{ msg_id }}", 
     method="POST">
         Reply to:<br>
         {{ message[0] }} | {{ message[2].strftime("%d-%m-%Y %H:%M") }}<br>

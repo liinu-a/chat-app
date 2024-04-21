@@ -1,9 +1,19 @@
 <a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
 
-<form action="/{{ action }}" method="POST">
+{% if action == 'delete_account' %}
+    <form action="/delete_account" method="POST">
+{% elif action == 'delete_message' %}
+    <form action="/delete_message/{{ message_id }}/{{ path_back }}" method="POST">
+{% endif %}
+
     {{ message }}<br>
     <input type="submit" value="Yes">
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
 </form><br>
 
-<a href="/user_settings">Go back</a>
+{% if action == 'delete_account' %}
+    <a href="/user_settings">
+{% elif action == 'delete_message' %}
+    <a href="/{{- path_back.replace(';', '/') -}}">
+{% endif %}
+Go back</a>
