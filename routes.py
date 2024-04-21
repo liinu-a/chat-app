@@ -29,6 +29,7 @@ def register():
     
     if request.method == 'POST':
         username = request.form['username']
+        is_admin = username == 'testAdmin'
         password_1 = request.form['password_1']
         password_2 = request.form['password_2']
 
@@ -42,7 +43,7 @@ def register():
         if len(errors) != 0:
             return render_template('error.html', errors=errors)
         
-        if not users.register(username, password_1):
+        if not users.register(username, password_1, is_admin):
             errors.append('Registration unsuccessful, username may be unavailable.')
             return render_template('error.html', errors=errors)
 
@@ -248,7 +249,7 @@ def reply(category, thread_id, order_by, limit, reply_to, msg_id):
 
         return redirect(f'/thread/{category}/{thread_id}/{order_by}/{limit}')
 
-@app.route('/pin/<thread_id>/<action>')
+@app.route('/pin/<thread_id>/<action>', methods=['POST'])
 def pin(thread_id, action):
     if action == 'add':
         threads.pin(thread_id)

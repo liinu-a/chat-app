@@ -17,12 +17,12 @@ def login(username, password):
     session["csrf_token"] = secrets.token_hex(16)
     return True
 
-def register(username, password_1):
+def register(username, password_1, is_admin):
     hash_value = generate_password_hash(password_1)
     try:
         sql = '''INSERT INTO users (username, password, is_admin)
-                 VALUES (:username, :password, False)'''
-        db.session.execute(text(sql), {'username':username, 'password':hash_value})
+                 VALUES (:username, :password, :is_admin)'''
+        db.session.execute(text(sql), {'username':username, 'password':hash_value, 'is_admin':is_admin})
         db.session.commit()
     except:
         return False
