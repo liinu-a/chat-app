@@ -1,9 +1,37 @@
 <!DOCTYPE html>
-<head>
-    <meta name="viewport" content="width=device_width, initial-scale=1">
-    <title>Chat</title>
-</head>
-<body>
-    {% block body %}
-    {% endblock %}
-</body>
+<html>
+    <head>
+        <script src="https://kit.fontawesome.com/4c9a1b3eaf.js" crossorigin="anonymous"></script>
+        <script src="{{url_for('static', filename='pin.js')}}"></script>
+        <meta name="viewport" content="width=device_width, initial-scale=1">
+        <title>Chat</title>
+    </head>
+    <body>
+        <div id="topnav">
+            <a href="/">Home <i class="fa-solid fa-house" aria-hidden="true"></i></a>
+            <form action="/threads/search/most_recent/25" method="GET">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                {% if request.args.query %}
+                <input type="text" name="query" placeholder="Search" value="{{ request.args.query }}">
+                {% else %}
+                <input type="text" name="query" placeholder="Search">
+                {% endif %}
+                <button type="submit">Search</button>
+            </form><br>
+
+            {% if session.user_id %}
+            <a href="/logout">Log Out</a><br>
+            {% else %}
+            <a href="/login">Log In</a><br>
+            {% endif %}
+            <hr>
+        </div>
+        <div class="info">
+            {% for message in get_flashed_messages() %}
+            {{ message }}<br>
+            {% endfor %}
+        </div>
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>

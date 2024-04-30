@@ -1,11 +1,14 @@
-<form action="/register", method="POST">
-    Username:<br>
-    <input type="text" name="username"><br>
-    Password:<br>
-    <input type="password" name="password_1"><br>
-    Repeat password:<br>
-    <input type="password" name="password_2"><br>
+{% extends 'layout.html' %}
+{% block body %}
+<form action="/register" method="POST">
+    <label for="username">Username:</label><br>
+    <input type="text" name="username" id="username" value="{{ username }}"><br>
+    <label for="password_1">Password:</label><br>
+    <input type="password" name="password_1" id="password_1"><br>
+    <label for="password_2">Repeat password:</label><br>
+    <input type="password" name="password_2" id="password_2"><br>
     <input type="submit" value="Register">
 </form>
 
-<a href="/">Go back</a>
+Go back to <a href="/login">log In</a>
+{% endblock %}

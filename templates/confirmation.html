@@ -1,19 +1,14 @@
-<a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
-
-{% if action == 'delete_account' %}
-    <form action="/delete_account" method="POST">
-{% elif action == 'delete_message' %}
-    <form action="/delete_message/{{ message_id }}/{{ path_back }}" method="POST">
-{% endif %}
-
-    {{ message }}<br>
+{% extends 'layout.html' %}
+{% block body %}
+<form action="/delete/{{ target }}" method="POST">
+    {{ confirm }}<br>
     <input type="submit" value="Yes">
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-</form><br>
+</form>
 
-{% if action == 'delete_account' %}
-    <a href="/user_settings">
-{% elif action == 'delete_message' %}
-    <a href="/{{- path_back.replace(';', '/') -}}">
+{% if target == 'account' %} <a href="/user_settings">
+{% elif session.return_to == 'thread' %} <a href="{{ session.thread_url }}">
+{% else %} <a href="{{ session.threads_url }}">
 {% endif %}
-Go back</a>
+No, take me back</a>
+{% endblock %}

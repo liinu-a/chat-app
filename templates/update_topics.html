@@ -1,22 +1,23 @@
-<a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
-
-<form action="/{{ action }}_topic", method="POST">
+{% extends 'layout.html' %}
+{% block body %}
+<form action="/{{ action }}_topic" method="POST">
 
     {% if action == 'add' %}
-    Topic:<br>
-    <input type="text" name="topic" minlength="1" maxlength="20"><br>
+    <label for="topic">Topic:</label>
+    <input type="text" name="topic" id="topic" value="{{ value }}" minlength="1" maxlength="20"><br>
     <input type="submit" value="Add">
 
     {% elif action == 'remove' %}
-    Topic to remove:<br>
-    {% for topic in topics %}
-    <input type="radio" name="topic" value="{{ topic[1] }}">{{ topic[1] }}<br>
-    {% endfor %}
-    
+    Topics to remove:<br>
+    {% for topic in session.topics %}
+    <label for="{{ topic[0] }}">{{ topic[1] }}</label>
+    <input type="checkbox" name="topic" id="{{ topic[0] }}" value="{{ topic[1] }}"><br>
+    {% endfor %}<br>
     <input type="submit" value="Remove">
     {% endif %}
 
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
 </form>
 
-<a href="/all_topics">Go back</a>
+<br><a href="/">Go back</a>
+{% endblock %}

@@ -1,110 +1,114 @@
-<a href="/">Front page</a> | 
-{% if session.user_id %}
-    <a href="/logout">Log Out</a><br>
-{% else %}
-    <a href="/login">Log In</a><br>
-{% endif %}
+{% extends 'layout.html' %}
+{% block script %}
+<script src="{{url_for('static', filename='pin.js')}}"></script>
+<script src="{{url_for('static', filename='thread.js')}}"></script>
+{% endblock %}
+{% block body %}
 
-<div>
-    {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
+<div class="thread" id="{{ thread[3] }}">
+    {{ thread[1] }} | {{ thread[5].strftime("%Y-%m-%d %H:%M") }}<br>
     {{ thread[2] }}<br>
     {{ thread[4] }}<br>
-    <a href="/reply/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/thread/{{ thread[3] }}">
-        reply
-    </a> | messages {{ thread[6] }}<br>
 
     {% if session.user_id %}
+    <button onclick="reply('{{ thread_id }}', 'thread', '{{ thread[3] }}')">Reply</button> |
+    <i class="fa-regular fa-comments" aria-label="comments"></i> {{ thread[6] }}<br>
 
     <button onclick="pinThread('{{ thread_id }}', 'pin_{{ thread_id }}')">
-        {% if thread[7] %}
-            <i class="fa-solid fa-thumbtack" data-is-pinned='true' 
-               style="color: #1c1c1c;" id="pin_{{ thread_id }}"></i>
+        {% if thread[8] %}
+        <i class="fa-solid fa-thumbtack" aria-label="unpin" data-is-pinned='true' 
+        style="color: #1c1c1c;" id="pin_{{ thread_id }}"></i>
         {% else %}
-            <i class="fa-solid fa-thumbtack" data-is-pinned='false' 
-               style="color: #9e9e9e;" id="pin_{{ thread_id }}"></i>
+        <i class="fa-solid fa-thumbtack" aria-label="pin" data-is-pinned='false' 
+        style="color: #9e9e9e;" id="pin_{{ thread_id }}"></i>
         {% endif %}
-        </button>
+    </button>
 
-        {% if thread[0] == session.user_id or is_admin %}
-            <a href="/confirmation/delete_message/{{ thread[3] }}/threads;{{ category }};{{ order_by }};25">Remove</a><br>
-        {% endif %}
-        
+    {% if thread[0] == session.user_id or is_admin %}
+    <button onclick="deleteMsgThread('thread', '{{ thread[3] }}', 'thread')">Delete</button><br>
+    {% endif %}
     {% endif %}
 </div>
 <hr>
 
+{% if replies %}
+
 Sort by:
-<a href="/thread/{{ category }}/{{ thread_id }}/most_recent/25">Most recent</a> | 
-<a href="/thread/{{ category }}/{{ thread_id }}/oldest/25">Oldest</a> | 
-<a href="/thread/{{ category }}/{{ thread_id }}/most_replies/25">Most replies</a><br>
-
-
+<a href="/thread/{{ thread_id }}/most_recent/25">Most recent</a> | 
+<a href="/thread/{{ thread_id }}/oldest/25">Oldest</a> | 
+<a href="/thread/{{ thread_id }}/most_replies/25">Most replies</a><br>
 
 {% for reply in replies %}
     <div id="{{ reply[2] }}">
-
         {% if reply[9] != thread[3] %}
-            <div class="reply_to" style="border: 2px solid black">
-                {{ reply[6] }} | {{ reply[8].strftime("%d-%m-%Y %H:%M") }}<br>
-                {{ reply[7] }}<br>
-            </div>
+        <div class="reply_to" style="border: 2px solid black">
+            {{ reply[6] }} | {{ reply[8].strftime("%Y-%m-%d %H:%M") }}<br>
+            {{ reply[7] }}<br>
+        </div>
         {% endif %}
 
-        {{ reply[1] }} | {{ reply[4].strftime("%d-%m-%Y %H:%M") }}<br>
+        {{ reply[1] }} | {{ reply[4].strftime("%Y-%m-%d %H:%M") }}<br>
         {{ reply[3] }}<br>
-
-        <a href="/reply/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/comment/{{ reply[2] }}">
-            reply
-        </a> {{ reply[5] }}<br>
-
+        
         {% if session.user_id %}
-            {% if reply[0] == session.user_id or is_admin or session.user_id == thread[0] %}
-                <a href="/confirmation/delete_message/{{ reply[2] }}/thread;{{ category }};{{ thread_id }};{{ order_by }};25">Remove</a><br>
-            {% endif %}
+        <button onclick="reply('{{ thread_id }}', 'comment', '{{ reply[2] }}')">Reply</button><br>
+        {% if reply[0] == session.user_id or is_admin or session.user_id == thread[0] %}
+        <button onclick="deleteMsgThread('reply', '{{ reply[2] }}', 'thread')">Delete</button><br>
         {% endif %}
-        <hr>
+        {% endif %}
     </div>
+    <hr>
 {% endfor %}
 
-
 {% if replies_left %}
-    <a href="/thread/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit+25 }}/{{ replies[-1][2] }}">
-        Load more
-    </a>
+<button onclick="loadMore()">Load more</button>
 {% endif %}
 
+{% else %} No replies yet.
+{% endif %}
+
+<a href="{{ session.threads_url }}">Go back</a>
+
 {% if scroll_to %}
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.location.hash = '#{{ scroll_to }}';
-        });
-    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        window.scrollTo(0, Number('{{ scroll_to }}'));
+    });
+</script>
 {% endif %}
 
 <script>
-    function pinThread(thread_id, pin_id) {
-        let target = document.getElementById(pin_id);
-        let pinned = target.dataset.isPinned === 'true';
-
-        let action = null;
-        if (pinned) {
-            action = 'remove';
-        } else {
-            action = 'add';
-        }
-
-        fetch(`/pin/${thread_id}/${action}`, {method: 'POST'})
+    const base_url =  window.location.origin;
+    
+    function loadMore() {
+        let more_url = `${base_url}/thread/{{ thread_id }}/{{ order_by }}/{{ limit+25 }}/${window.scrollY}`;
+        window.location.assign(more_url);
+    }
+    
+    function saveThreadUrl() {
+        let back = `thread;{{ thread_id }};{{ order_by }};{{ limit }}${window.scrollY}`;
+    
+        fetch(`/thread_url/${back}`, {method: 'POST'})
         .then(response => response.json()) 
         .then(data => console.log(data)) 
         .catch(error => console.error(error));
-
-        if (action == 'add') {
-            target.style.color = '#1c1c1c';
-        } else if (action == 'remove') {
-            target.style.color = '#9e9e9e';
+    }
+    
+    function reply(thread_id, reply_to, message_id) {
+        saveThreadUrl();
+        let reply_url = `/reply/${thread_id}/${reply_to}/${message_id}`;
+        window.location.assign(reply_url);
+    }
+    
+    function deleteMsgThread(target, message_id, return_to) {
+        let del_url = null;
+        if (target == 'reply') {
+            saveThreadUrl();
+            del_url = `/delete/reply/${message_id}/${return_to}`;
+        } else {
+            del_url = `/delete/thread/${message_id}/${return_to}`;
         }
-        target.dataset.isPinned = `${!pinned}`;
+        window.location.assign(del_url);
     }
 </script>
-
-<script src="https://kit.fontawesome.com/4c9a1b3eaf.js" crossorigin="anonymous"></script>
+{% endblock %}

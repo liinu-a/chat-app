@@ -39,9 +39,7 @@ def change_username(username):
     return True
 
 def logout():
-    del session['user_id']
-    del session['username']
-    del session['csrf_token']
+    session.clear()
 
 def get_user_data():
     sql = 'SELECT username, created_at FROM users WHERE id=:user_id'

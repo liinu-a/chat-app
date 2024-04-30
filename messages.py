@@ -39,12 +39,12 @@ def get_message(message_id):
     message = result.fetchone()
     return message
 
-def get_init_message(thread_id):
+def get_init_message(message_id):
     sql = '''SELECT U.username, M.message, M.date, T.title
-             FROM threads T JOIN messages M ON T.message_id=M.id
+             FROM messages M JOIN threads T ON T.message_id=M.id
                             JOIN users U ON U.id=M.user_id
-             WHERE T.id=:thread_id'''
-    result = db.session.execute(text(sql), {'thread_id':thread_id})
+             WHERE M.id=:message_id'''
+    result = db.session.execute(text(sql), {'message_id':message_id})
     init_message = result.fetchone()
     return init_message
 
@@ -58,3 +58,12 @@ def delete_message(message_id):
     sql = 'DELETE FROM messages WHERE id=:message_id'
     db.session.execute(text(sql), {'message_id':message_id})
     db.session.commit()
+
+def check_writer(message_id):
+    sql = 'SELECT user_id FROM messages WHERE id=:message_id'
+    result = db.session.execute(text(sql), {'message_id':message_id})
+    user_id = result.fetchone()[0]
+    try:
+        return session['user_id'] == user_id
+    except:
+        return False

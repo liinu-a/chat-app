@@ -1,10 +1,12 @@
-<a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
+{% extends 'layout.html' %}
+{% block body %}
 
 <form action="/change_username", method="POST">
-    Write your new username:<br>
-    <input type="text" name="username"><br>
+    <label for="new_username">Choose your new username:</label><br>
+    <input type="text" name="username" id="new_username" value="{{ new_username }}"><br>
     <input type="submit" value="Change">
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
 </form><br>
 
 <a href="/user_settings">Go back</a>
+{% endblock %}

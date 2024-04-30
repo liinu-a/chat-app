@@ -1,38 +1,38 @@
-<a href="/">Front page</a> | <a href="/logout">Log Out</a><br>
+{% extends 'layout.html' %}
+{% block body %}
 
 {% if add == 'thread' %}
-    <form action="/start_thread", method="POST">
-        Title:<br>
-        <input type="text" name="title" minlength="1" maxlength="20"><br>
+<form action="/start_thread/{{ back }}" method="POST">
+    <label for="title">Write a title for your post:</label>
+    <input type="text" name="title" id="title" value="{{ title }}" minlength="1" maxlength="20"><br>
 
 {% elif add == 'reply' %}
-    <form action="/reply/{{ category }}/{{ thread_id }}/{{ order_by }}/{{ limit }}/{{ reply_to }}/{{ msg_id }}", 
-    method="POST">
-        Reply to:<br>
-        {{ message[0] }} | {{ message[2].strftime("%d-%m-%Y %H:%M") }}<br>
-        {% if reply_to == 'thread' %}
-            {{ message[3] }}<br>
-        {% endif %}
-        {{ message[1] }}<br>
+<form action="/reply/{{ thread_id }}/{{ reply_to }}/{{ message_id }}" method="POST">
+    Reply to:<br>
+    {{ session.reply_to_msg[0] }} | {{ session.reply_to_msg[2].strftime("%Y-%m-%d %H:%M") }}<br>
+    {% if reply_to == 'thread' %}
+    {{ session.reply_to_msg[3] }}<br>
+    {% endif %}
+    {{ session.reply_to_msg[1] }}<br>
 {% endif %}
 
-    Message:<br>
-    <textarea name="message" maxlength="10000"></textarea><br>
-
+    <label for="message">What would you like to say?</label>
+    <textarea name="message" id="message" maxlength="10000">{{ text }}</textarea><br>
+    
     {% if add == 'thread' %}
-        {% if topic %}
-            <input type="hidden" name="topic" value="{{ topics_data }};{{ topic }}">
-        {% else %}
-            Choose a topic:<br>
-            {% for tpc in topics_data %}
-                <input type="radio" name="topic" value="{{ tpc[0] }};{{ tpc[1] }}">{{ tpc[1] }}<br>
-            {% endfor %}
-        {% endif %}
-        <input type="submit" value="Start">
+    Choose a topic:<br>
+    {% for topic in session.tpcs %}
+    <label for="{{ topic[0] }}">{{ topic[1] }}</label>
+    <input type="radio" name="topic" id="{{ topic[0] }}" value="{{ topic[0] }}"><br>
+    {% endfor %}
+    <input type="submit" value="Start"><br>
+    <a href="{{ session.threads_url }}">Go back</a>
 
     {% elif add == 'reply' %}
-        <input type="submit" value="Reply">
+    <input type="submit" value="Reply">
+    <a href="{{ session.thread_url }}">Go back</a>
     {% endif %}
-    
+
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
 </form>
+{% endblock %}

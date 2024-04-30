@@ -1,95 +1,119 @@
-<a href="/">Front page</a> | 
-{% if session.user_id %}
-    <a href="/logout">Log Out</a><br>
-{% else %}
-    <a href="/login">Log In</a><br>
+{% extends 'layout.html' %}
+{% block body %}
+
+{% if category != 'pinned' and category != 'search' %}
+<a href="/start_thread/threads;{{ category }};{{ order_by }};{{ limit }}">
+    Start a thread <i class="fa-solid fa-pen" aria-hidden="true"></i>
+</a><br>
 {% endif %}
 
-{{ category }}<br>
-{% if category == 'all' or category == 'search' %}
-    <a href="/start_thread">Start a thread</a><br>
-{% elif category != 'pinned' %}
-    <a href="/start_thread/{{ category }}">Start a thread under {{ category }}</a><br>
-{% endif %}
+{% if threads %}
+
+{% if category == 'search' %} Results for search: {{ request.args.query }}
+{% elif category == 'user' %} My threads
+{% elif category == 'commented' %} Threads I've participated in
+{% else %} {{ category|capitalize }}
+{% endif %} | {{ threads[0][7] }}<br>
 
 Sort by:
-
 {% if category == 'pinned' %}
-    <a href="/threads/{{ category }}/newest_pin/25">Newly pinned</a> | 
-    <a href="/threads/{{ category }}/oldest_pin/25">Oldest pinned</a> |
+<a href="/threads/{{ category }}/newest_pin/25">Most recent pin</a> | 
+<a href="/threads/{{ category }}/oldest_pin/25">Oldest pin</a> |
 {% endif %}
 
+{% if category == 'search' %}
+<a href="/threads/search/most_recent/25?query={{ request.args.query }}">Most recent</a> | 
+<a href="/threads/search/oldest/25?query={{ request.args.query }}">Oldest</a> | 
+<a href="/threads/search/most_replies/25?query={{ request.args.query }}">Most replies</a><br>
+{% else %}
 <a href="/threads/{{ category }}/most_recent/25">Most recent</a> | 
 <a href="/threads/{{ category }}/oldest/25">Oldest</a> | 
 <a href="/threads/{{ category }}/most_replies/25">Most replies</a><br>
+{% endif %}
 
 {% for thread in threads %}
-    <div id="{{ thread[3] }}">
-        {{ thread[1] }} | {{ thread[5].strftime("%d-%m-%Y %H:%M") }}<br>
-        <a href="/thread/{{ category }}/{{ thread[3] }}/most_recent/25">{{ thread[2] }}</a><br>
-        {{ thread[4] }}<br>
-        messages {{ thread[6] }}<br>
+<div class="thread" id="{{ thread[3] }}">
+    {{ thread[1] }} | {{ thread[5].strftime("%Y-%m-%d %H:%M") }}<br>
+    <button onclick="toThread('{{ thread[3] }}')">{{ thread[2] }}</button>
+    {{ thread[4] }}<br>
+    <i class="fa-regular fa-comments" aria-label="comments"></i> {{ thread[6] }}<br>
 
-
-        {% if session.user_id %}
-
-            <button onclick="pinThread('{{ thread[3] }}', 'pin_{{ thread[3] }}')">
-            {% if thread[8] %}
-                <i class="fa-solid fa-thumbtack" data-is-pinned='true' 
-                   style="color: #1c1c1c;" id="pin_{{ thread[3] }}"></i>
-            {% else %}
-                <i class="fa-solid fa-thumbtack" data-is-pinned='false' 
-                   style="color: #9e9e9e;" id="pin_{{ thread[3] }}"></i>
-            {% endif %}
-            </button>
-
-            {% if thread[0] == session.user_id or is_admin %}
-                <a href="/confirmation/delete_message/{{ thread[9] }}/threads;{{ category }};{{ order_by }};25">Remove</a><br>
-            {% endif %}
+    {% if session.user_id %}
+    <button onclick="pinThread('{{ thread[3] }}', 'pin_{{ thread[3] }}')">
+        {% if thread[8] %}
+        <i class="fa-solid fa-thumbtack" aria-label="unpin" data-is-pinned='true' 
+        style="color: #1c1c1c;" id="pin_{{ thread[3] }}"></i>
+        {% else %}
+        <i class="fa-solid fa-thumbtack" aria-label="pin" data-is-pinned='false' 
+        style="color: #9e9e9e;" id="pin_{{ thread[3] }}"></i>
         {% endif %}
-    </div>
-    <hr>
+    </button>
+
+    {% if thread[0] == session.user_id or is_admin %}
+    <button onclick="deleteMsgThreads('{{ thread[9] }}')">Delete</button><br>
+    {% endif %}
+    {% endif %}
+</div>
+<hr>
 {% endfor %}
 
 {% if thrds_left %}
-    <a href="/threads/{{ category }}/{{ order_by }}/{{ limit+25 }}/{{ threads[-1][3] }}">
-    Load more
-    </a>
+<button onclick="loadMore()">Load more</button>
 {% endif %}
 
+{% if category == 'search' %}
+<a href="/threads/search/{{ order_by }}/{{ limit }}?query={{ request.args.query }}">
+{% else %}
+<a href="/threads/{{ category }}/{{ order_by }}/{{ limit }}">
+{% endif %}
+Back to the top</a>
 
 {% if scroll_to %}
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            document.location.hash = '#{{ scroll_to }}';
+            window.scrollTo(0, Number('{{ scroll_to }}'));
         });
     </script>
 {% endif %}
 
 <script>
-    function pinThread(thread_id, pin_id) {
-        let target = document.getElementById(pin_id);
-        let pinned = target.dataset.isPinned === 'true';
+    const base_url =  window.location.origin;
 
-        let action = null;
-        if (pinned) {
-            action = 'remove';
-        } else {
-            action = 'add';
+    function saveThreadsUrl() {
+        let back = `threads;{{ category }};{{ order_by }};{{ limit }};${window.scrollY}`;
+
+        if ('{{ category }}' == 'search') {
+            back += '?query={{ request.args.query }}';
         }
 
-        fetch(`/pin/${thread_id}/${action}`, {method: 'POST'})
+        fetch(`/threads_url/{{ category }}/${back}`, {method: 'POST'})
         .then(response => response.json()) 
         .then(data => console.log(data)) 
         .catch(error => console.error(error));
-
-        if (action == 'add') {
-            target.style.color = '#1c1c1c';
-        } else if (action == 'remove') {
-            target.style.color = '#9e9e9e';
-        }
-        target.dataset.isPinned = `${!pinned}`;
     }
+    
+    function toThread(thread_id) {
+        saveThreadsUrl();
+        let thread_url = `${base_url}/thread/${thread_id}/most_recent/25`;
+        window.location.assign(thread_url);
+    }
+
+    function loadMore() {
+        let more_url = `${base_url}/threads/{{ category }}/{{ order_by }}/{{ limit+25 }}/${window.scrollY}`;
+        if ('{{ category }}' == 'search') {
+            more_url += '?query={{ request.args.query }}';
+        }
+        window.location.assign(more_url);
+    }
+
+    function deleteMsgThreads(message_id) {
+        saveThreadsUrl();
+        let del_url = `/delete/thread/${message_id}/threads`;
+        window.location.assign(del_url);
+    }  
 </script>
 
-<script src="https://kit.fontawesome.com/4c9a1b3eaf.js" crossorigin="anonymous"></script>
+{% else %} No threads yet.
+{% endif %}
+
+{% endblock %}
