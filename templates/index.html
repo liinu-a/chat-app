@@ -1,49 +1,105 @@
 {% extends 'layout.html' %}
 {% block body %}
-<div id="sidebar">
-    {% if shown_tpcs %}
-    <a href="/start_thread/">
-        Start a thread <i class="fa-solid fa-pen" aria-hidden="true"></i>
-    </a>
-    {% else %} No topics to start a thread under.
-    {% endif %}<br>
 
-    <a href="/threads/all/most_recent/25">All</a><br>
-    
-    Topics:<br>
-    {% if not shown_tpcs %} 
-    No topics.<br>
-    {% if is_admin %} 
-    <a href="/add_topic">Add a topic</a><br>
-    {% endif %}
+{% if session.user_id %}
+<div class="ms-auto" id="view-acc">
+    <a class="text-decoration-none" href="/user_settings">My account</a>
+</div>
 
-    {% else %}
-    {% for topic in shown_tpcs %}
-    <a href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a><br>
-    {% endfor %}
+<div class="d-flex flex-column flex-xl-row justify-content-center align-items-center mb-5" id="options">
+    <div class="d-flex flex-column border rounded shadow option">
+        <h5>Explore discussions already started by other users</h5>
+        <div class="d-flex justify-content-between align-items-center h-100">
+            {% if not shown_tpcs %}
+            <p>No topics.</p>
 
-    {% if listed_tpcs %} 
-    <div class="dropdown">
-        <button class="drop_button">More</button>
-        <div class="drop_content">
-            {% for topic in listed_tpcs %}
-            <a href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a><br>
+            {% else %}
+            <a class="text-decoration-none" href="/threads/all/most_recent/25">All</a>
+            {% for topic in shown_tpcs %}
+            <a class="text-decoration-none" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
             {% endfor %}
+    
+            {% if listed_tpcs %}
+            <div class="dropdown">
+                <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for topic in listed_tpcs %}
+                    <a class="dropdown-item" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        {% if is_admin %} 
+        <div class="d-flex">
+            {% if shown_tpcs %} 
+            <a class="btn btn-light btn-sm border me-2" href="/add_topic">Add a topic</a>
+            <a class="btn btn-light btn-sm border" href="/remove_topic">Remove topics</a><br>
+            {% else %}
+            <a class="btn btn-light btn-sm border" href="/add_topic">Add a topic</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+        
+    <div class="m-4 border rounded shadow option">
+        <h5 class="mb-3">Talk about your interests, share your knowledge or ask questions</h5>
+        {% if shown_tpcs %}
+        <div class="d-flex justify-content-center">
+            <a class="btn btn-light border mt-4" href="/start_thread/">
+                Start a discussion <i class="fa-solid fa-pen" aria-hidden="true"></i>
+            </a>
+        </div>
+        {% else %}
+        <p class="my-4">Currently no existing topics for discussions.</p>
+        {% endif %}
+    </div>
+
+    <div class="border rounded shadow option">
+        <h5>Personal to {{ session.username }}</h5>
+        <div class="d-flex flex-column" id="user-threads">
+            <a class="text-decoration-none" href="/threads/pinned/most_recent/25">Pinned</a>
+            <a class="text-decoration-none" href="/threads/user/most_recent/25">My threads</a>
+            <a class="text-decoration-none" href="/threads/commented/most_recent/25">Threads I've commented on</a>
         </div>
     </div>
-    {% endif %}
+</div>
+{% else %}
+<div class="d-flex justify-content-center mb-5" id="options">
+    <div class="d-flex flex-column border rounded shadow option">
+        <h5>Explore discussions already started by other users</h5>
+        <div class="d-flex justify-content-between align-items-center h-100">
+            {% if not shown_tpcs %}
+            <p>No topics.</p>
 
-    {% if is_admin %}
-    <a href="/add_topic">Add a topic</a> | <a href="/remove_topic">Remove topics</a><br>
-    {% endif %}
-    {% endif %}
-
-    {% if session.user_id %}
-    {{ session.username }}
-    <a href="/threads/pinned/most_recent/25">Pinned</a><br>
-    <a href="/threads/user/most_recent/25">My threads</a><br>
-    <a href="/threads/commented/most_recent/25">Threads I've participated in</a>
-    <a href="/user_settings">My account</a>
-    {% endif %}
-</div><br>
+            {% else %}
+            <a class="text-decoration-none" href="/threads/all/most_recent/25">All</a>
+            {% for topic in shown_tpcs %}
+            <a class="text-decoration-none" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
+            {% endfor %}
+    
+            {% if listed_tpcs %}
+            <div class="dropdown">
+                <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for topic in listed_tpcs %}
+                    <a class="dropdown-item" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="d-flex py-4 mt-auto" id="about" style="background-color: rgb(228, 228, 228);">
+    <a class="text-decoration-none" href="/about">About</a>  
+</div>
 {% endblock %}

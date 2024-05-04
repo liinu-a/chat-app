@@ -7,17 +7,21 @@ def index():
     tpcs = topics.get_topics()
     is_admin = users.check_role()
     
-    shown_tpcs = tpcs[0:5]
+    shown_tpcs = tpcs[0:4]
     listed_tpcs = None
     if len(tpcs) > 5:
-        listed_tpcs = tpcs[5: ]
+        listed_tpcs = tpcs[4: ]
 
     return render_template('index.html', shown_tpcs=shown_tpcs, listed_tpcs=listed_tpcs, is_admin=is_admin)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
     
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('user_id'):
-        flash("You have alreagy logged in.")
+        flash("You are alreagy logged in.", 'info')
         return redirect('/')
 
     if request.method == 'GET':
@@ -28,11 +32,11 @@ def login():
         password = request.form['password']
 
         if username == '' or password == '':
-            flash("Please make sure you've filled in both your username and password.")
+            flash("Please make sure you've filled in both your username and password.", 'error')
             return render_template('/login.html', username=username)
 
         if not users.login(username, password):
-            flash('Invalid username or password. Please try again.')
+            flash('Invalid username or password. Please try again.', 'error')
             return render_template('login.html', username=username)
         
         return redirect('/')
@@ -40,7 +44,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if session.get('user_id'):
-        flash(f"You've alreagy signed up and are logged in as user {session['username']}.")
+        flash(f"You've alreagy signed up and are logged in as user {session['username']}.", 'info')
         return redirect('/')
 
     if request.method == 'GET':
@@ -54,19 +58,19 @@ def register():
 
         errors = False
         if username == '' or 25 < len(username):
-            flash('Username must be 1-25 characters.')
+            flash('Username must be 1-25 characters.', 'error')
             errors = True
         if len(password_1) < 6:
-            flash('Password must be at least 6 characters.')
+            flash('Password must be at least 6 characters.', 'error')
             errors = True
         if password_1 != password_2:
-            flash('The passwords do not match. Please try again.')
+            flash('The passwords do not match. Please try again.', 'error')
             errors = True
         if errors:
             return render_template('register.html', username=username)
         
         if not users.register(username, password_1, is_admin):
-            flash('Registration unsuccessful, username may be unavailable. Please try again.')
+            flash('Registration unsuccessful, username may be unavailable. Please try again.', 'error')
             return render_template('register.html', username=username)
 
         return redirect('/')
@@ -74,7 +78,7 @@ def register():
 @app.route('/user_settings')
 def user_settings():
     if not session.get('user_id'):
-        flash('You have to be logged in to view your account.')
+        flash('You have to be logged in to view your account.', 'error')
         return redirect('/login')
 
     user_data = users.get_user_data()
@@ -83,7 +87,7 @@ def user_settings():
 @app.route('/change_username', methods=['GET', 'POST'])
 def change_username():
     if not session.get('user_id'):
-        flash("Log in to change your account's username.")
+        flash("Log in to change your account's username.", 'error')
         return redirect('/login')
 
     if request.method == 'GET':
@@ -94,23 +98,23 @@ def change_username():
         username = request.form['username']
 
         if username == '' or 25 < len(username):
-            flash('Username must be 1-25 characters.')
+            flash('Username must be 1-25 characters.', 'error')
             return render_template('change_username.html', new_username=username)
         if username == session['username']:
-            flash(f'{username} is already set as your username.')
+            flash(f'{username} is already set as your username.', 'error')
             return render_template('change_username.html', new_username=username)
         if not users.change_username(username):
-            flash('Username change unsuccessfull. Username may be unavailable, please try again.')
+            flash('Username change unsuccessfull. Username may be unavailable, please try again.', 'error')
             return render_template('change_username.html', new_username=username)
         
-    flash(f'Username changed successfully. Your new username is {session["username"]}.')
+    flash(f'Username changed successfully. Your new username is {session["username"]}.', 'info')
     return redirect('/user_settings')
 
 @app.route('/delete/<target>', methods=['GET', 'POST'])
 @app.route('/delete/<target>/<message_id>/<return_to>', methods=['GET', 'POST'])
 def delete(target, message_id=None, return_to=None):
     if not session.get('user_id'):
-        flash("The page you are trying to access requires you to be logged in.")
+        flash("The page you are trying to access requires you to be logged in.", 'error')
         return redirect('/login')
     
     if request.method == 'GET':
@@ -137,15 +141,15 @@ def delete(target, message_id=None, return_to=None):
 
         if target == 'account':
             users.delete_account()
-            flash('Your account has been deleted.')
+            flash('Your account has been deleted.', 'info')
             return redirect('/')
         
         messages.delete_message(session['delete_message_id'])
         if target == 'thread':
-            flash('The thread has been deleted.')
+            flash('The thread has been deleted.', 'info')
             return redirect(session['threads_url'])
         else:
-            flash('Reply deleted.')
+            flash('Reply deleted.', 'info')
             return redirect(session['thread_url'])
         
 @app.route('/logout')
@@ -159,8 +163,11 @@ def update_topics(action):
         abort(403)
 
     if request.method == 'GET':
-        tpcs = None
         if action == 'remove':
+            tpcs = [list(t) for t in topics.get_topics()]
+            if tpcs == []:
+                flash('No existing topics to remove.', 'error')
+                return redirect('/')
             session['topics'] = [list(t) for t in topics.get_topics()]
 
         return render_template('update_topics.html', action=action, value='')
@@ -171,35 +178,35 @@ def update_topics(action):
         if action == 'add':
             topic = request.form['topic'].lower()
             if len(topic) < 1:
-                flash("Please write the topic you'd like to add.")
+                flash("Please write the topic you'd like to add.", 'error')
                 return render_template('update_topics.html', action=action, value='')
             if not topics.add_topic(topic):
-                flash('The topic you tried to add already exists. Please try again')
+                flash('The topic you tried to add already exists. Please try again.', 'error')
                 return render_template('update_topics.html', action=action, value=topic)
         
         elif action == 'remove':
             removables = request.form.getlist('topic')
             if len(removables) == 0:
-                flash("You haven't chosen any topics to remove.")
+                flash("You haven't chosen any topics to remove.", 'error')
                 return render_template('update_topics.html', action=action)
 
             for remove in removables:
                 topics.remove_topic(remove)
 
-        flash('Topics updated successfully.')
+        flash('Topics updated successfully.', 'info')
         return redirect('/')
     
 @app.route('/start_thread/', methods=['GET', 'POST'])
 @app.route('/start_thread/<back>', methods=['GET', 'POST'])
 def start_thread(back=None):
     if not session.get('user_id'):
-        flash("Please log in to start a thread.")
+        flash("Please log in to start a thread.", 'error')
         return redirect('/login')
 
     if request.method == 'GET':
         choose_topic = topics.get_topics()
         if not choose_topic:
-            flash('Unfortunately, there are no topics to start a thread under.')
+            flash('Unfortunately, there are no topics to start a thread under.', 'error')
             return redirect('/')
         session['tpcs'] = [list(t) for t in choose_topic]
 
@@ -217,13 +224,13 @@ def start_thread(back=None):
 
         errors = False
         if title == '' or 20 < len(title):
-            flash('Make sure the the length of the title is 1-20 characters.')
+            flash('Make sure the the length of the title is 1-20 characters.', 'error')
             errors = True
         if len(message) > 10000:
-            flash('Message exceeds the length limit of 10000 characters.')
+            flash('Message exceeds the length limit of 10000 characters.', 'error')
             errors = True
         if 'topic' not in request.form:
-            flash("Please choose a topic.")
+            flash("Please choose a topic.", 'error')
             errors = True
         if errors:
             return render_template('add.html', add='thread', title=title, text=message, back=back)
@@ -237,7 +244,7 @@ def start_thread(back=None):
 @app.route('/reply/<thread_id>/<reply_to>/<message_id>', methods=['GET', 'POST'])
 def reply(thread_id, reply_to, message_id):
     if not session.get('user_id'):
-        flash('You must be logged in to write replies.')
+        flash('You must be logged in to write replies.', 'error')
         return redirect('/login')
 
     if request.method == 'GET':
@@ -249,7 +256,7 @@ def reply(thread_id, reply_to, message_id):
                 message = messages.get_message(message_id)
 
         if not message:
-            flash("The thread or comment you're trying to reply to does not exist.")
+            flash("The thread or comment you're trying to reply to does not exist.", 'error')
             return redirect('/')
 
         session['reply_to_msg'] = [data for data in message]
@@ -261,9 +268,9 @@ def reply(thread_id, reply_to, message_id):
         message = request.form['message']
 
         if len(message) > 10000:
-            flash('Message exceeds the length limit of 10000 characters.')
+            flash('Message exceeds the length limit of 10000 characters.', 'error')
         elif message == '':
-            flash("The message field is empty.")
+            flash("The message field is empty.", 'error')
         else:
             reply_msg_id = messages.add_message(message)
             messages.add_reply(thread_id, reply_msg_id, message_id)
@@ -285,17 +292,17 @@ def thread_list(category, order_by, limit, scroll_to=None):
             thrds = threads.get_all_threads(order_by, limit)
         case 'pinned':
             if not logged_in:
-                flash('Please log in to view pinned threads.')
+                flash('Please log in to view pinned threads.', 'error')
                 return redirect('/login')
             thrds = threads.pinned(order_by, limit)
         case 'user':
             if not logged_in:
-                flash('Please log in to view your own threads.')
+                flash('Please log in to view your own threads.', 'error')
                 return redirect('/login')
             thrds = threads.get_user_threads(order_by, limit)
         case 'commented':
             if not logged_in:
-                flash("Please log in to view threads you've commented on.")
+                flash("Please log in to view threads you've commented on.", 'error')
                 return redirect('/login')
             thrds = threads.get_commented_threads(order_by, limit)
         case 'search':
@@ -344,7 +351,6 @@ def threads_url(category, back):
     if category == 'search':
         url += f'?query={request.args["query"]}'
     session['threads_url'] = url
-    print(session['threads_url'])
 
     return {'result': 'success'}
 

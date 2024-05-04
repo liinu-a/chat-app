@@ -67,7 +67,12 @@ Sort by:
 {% else %} No replies yet.
 {% endif %}
 
-<a href="{{ session.threads_url }}">Go back</a>
+{% if session.threads_url %}
+<a href="{{ session.threads_url }}">
+{% else %}
+<a href="/">
+{% endif %}
+Go back</a>
 
 {% if scroll_to %}
 <script>
