@@ -9,7 +9,7 @@ def index():
     
     shown_tpcs = tpcs[0:4]
     listed_tpcs = None
-    if len(tpcs) > 5:
+    if len(tpcs) > 4:
         listed_tpcs = tpcs[4: ]
 
     return render_template('index.html', shown_tpcs=shown_tpcs, listed_tpcs=listed_tpcs, is_admin=is_admin)

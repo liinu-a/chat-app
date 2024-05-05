@@ -4,7 +4,7 @@ body, #content {
 }
 
 body {
-    background-color: #eceae1 !important;
+    background-color: #dee4f0 !important;
 }
 
 input[type=search] {
@@ -43,7 +43,7 @@ form .form-control:focus, form .form-select:focus {
 
 .option {
     width: 420px;
-    height: 210px;
+    min-height: 210px;
     padding: 25px;
     background-color: #fafafa;
 }

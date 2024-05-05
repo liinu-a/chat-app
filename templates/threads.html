@@ -45,7 +45,7 @@
 <div class="container">
     {% for thread in threads %}
     <div class="row">
-        <div class="col-lg-8 offset-lg-2 my-2 p-4 rounded msg">
+        <div class="col-lg-8 offset-lg-2 my-2 p-4 rounded border msg">
             <p>{{ thread[1] }} &middot {{ thread[5].strftime("%Y-%m-%d %H:%M") }}</p>
             <button class="btn btn-link link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover p-0 mb-2" onclick="toThread('{{ thread[3] }}')">
                 <h6>{{ thread[2] }}</h6>
