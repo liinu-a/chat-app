@@ -1,14 +1,27 @@
 {% extends 'layout.html' %}
 {% block body %}
-<form action="/delete/{{ target }}" method="POST">
-    {{ confirm }}<br>
-    <input type="submit" value="Yes">
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-</form>
+<div class="container start">
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3">
+            <div class="d-flex flex-column align-items-center rounded py-4" style="background-color: #fafafa;">
+                <h5 class="mb-4">{{ confirm }}</h5>
+                <div class="d-flex">
+                    {% if target == 'account' %}
+                    <a class="btn btn-light border me-2" href="/user_settings">
+                    {% elif session.return_to == 'thread' %}
+                    <a class="btn btn-light border me-2" href="{{ session.thread_url }}">
+                    {% else %} 
+                    <a class="btn btn-light border me-2" href="{{ session.threads_url }}">
+                    {% endif %}
+                    No, go back</a>
 
-{% if target == 'account' %} <a href="/user_settings">
-{% elif session.return_to == 'thread' %} <a href="{{ session.thread_url }}">
-{% else %} <a href="{{ session.threads_url }}">
-{% endif %}
-No, take me back</a>
+                    <form action="/delete/{{ target }}" method="POST">
+                        <button class="btn btn-light border ms-2" type="submit">Confirm</button>
+                        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

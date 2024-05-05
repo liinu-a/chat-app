@@ -1,72 +1,96 @@
 {% extends 'layout.html' %}
 {% block body %}
 
+<div class="d-flex justify-content-center mt-5">
+    <p class="me-3 my-0">
+        {% if category == 'search' %} Results for search: {{ request.args.query }}
+        {% elif category == 'user' %} My threads
+        {% elif category == 'commented' %} Threads I've participated in
+        {% else %} {{ category|capitalize }}
+        {% endif %} 
+        &middot 
+        {% if threads %} {{ threads[0][7] }}
+        {% else %} 0
+        {% endif %}
+    </p>
+</div>
+
+<div class="d-flex justify-content-center align-items-center flex-wrap my-2">
+    <p class="my-0 me-2">Sort by:</p>
+    {% if category == 'pinned' %}
+    <a class="me-2 link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="newest_pin" href="/threads/{{ category }}/newest_pin/25">Most recent pin</a>
+    <a class="me-2 link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="oldest_pin" href="/threads/{{ category }}/oldest_pin/25">Oldest pin</a>
+    {% endif %}
+
+    {% if category == 'search' %}
+    <a class="me-2 link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="most_recent" href="/threads/search/most_recent/25?query={{ request.args.query }}">Most recent</a>
+    <a class="me-2 link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="oldest" href="/threads/search/oldest/25?query={{ request.args.query }}">Oldest</a>
+    <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="most_replies" href="/threads/search/most_replies/25?query={{ request.args.query }}">Most replies</a>
+    {% else %}
+    <a class="me-2 link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="most_recent" href="/threads/{{ category }}/most_recent/25">Most recent</a>
+    <a class="me-2 link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="oldest" href="/threads/{{ category }}/oldest/25">Oldest</a>
+    <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" id="most_replies" href="/threads/{{ category }}/most_replies/25">Most replies</a>
+    {% endif %}
+</div>
+
 {% if category != 'pinned' and category != 'search' %}
-<a href="/start_thread/threads;{{ category }};{{ order_by }};{{ limit }}">
-    Start a thread <i class="fa-solid fa-pen" aria-hidden="true"></i>
-</a><br>
+<div class="d-flex justify-content-center mb-3">
+    <a class="btn btn-light border mt-4" href="/start_thread/threads;{{ category }};{{ order_by }};{{ limit }}">
+        Start a discussion <i class="fa-solid fa-pen" aria-hidden="true"></i>
+    </a>
+</div>
 {% endif %}
 
 {% if threads %}
+<div class="container">
+    {% for thread in threads %}
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2 my-2 p-4 rounded msg">
+            <p>{{ thread[1] }} &middot {{ thread[5].strftime("%Y-%m-%d %H:%M") }}</p>
+            <button class="btn btn-link link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover p-0 mb-2" onclick="toThread('{{ thread[3] }}')">
+                <h6>{{ thread[2] }}</h6>
+            </button>
+            <p class="px-2 pb-2">{{ thread[4] }}</p>
 
-{% if category == 'search' %} Results for search: {{ request.args.query }}
-{% elif category == 'user' %} My threads
-{% elif category == 'commented' %} Threads I've participated in
-{% else %} {{ category|capitalize }}
-{% endif %} | {{ threads[0][7] }}<br>
+            <div class="d-flex align-items-center">
+                <i class="fa-regular fa-comments" aria-label="comments"></i>
+                <p class="my-0 ms-2 me-3">{{ thread[6] }}</p>
+                {% if session.user_id %}
+                <button class="pin-btn" onclick="pinThread('{{ thread[3] }}', 'pin_{{ thread[3] }}')">
+                    {% if thread[8] %}
+                    <i class="fa-solid fa-thumbtack" aria-label="unpin" data-is-pinned='true' style="color: #1c1c1c;" id="pin_{{ thread[3] }}"></i>
+                    {% else %}
+                    <i class="fa-solid fa-thumbtack" aria-label="pin" data-is-pinned='false' style="color: #9e9e9e;" id="pin_{{ thread[3] }}"></i>
+                    {% endif %}
+                </button>
 
-Sort by:
-{% if category == 'pinned' %}
-<a href="/threads/{{ category }}/newest_pin/25">Most recent pin</a> | 
-<a href="/threads/{{ category }}/oldest_pin/25">Oldest pin</a> |
-{% endif %}
-
-{% if category == 'search' %}
-<a href="/threads/search/most_recent/25?query={{ request.args.query }}">Most recent</a> | 
-<a href="/threads/search/oldest/25?query={{ request.args.query }}">Oldest</a> | 
-<a href="/threads/search/most_replies/25?query={{ request.args.query }}">Most replies</a><br>
-{% else %}
-<a href="/threads/{{ category }}/most_recent/25">Most recent</a> | 
-<a href="/threads/{{ category }}/oldest/25">Oldest</a> | 
-<a href="/threads/{{ category }}/most_replies/25">Most replies</a><br>
-{% endif %}
-
-{% for thread in threads %}
-<div class="thread" id="{{ thread[3] }}">
-    {{ thread[1] }} | {{ thread[5].strftime("%Y-%m-%d %H:%M") }}<br>
-    <button onclick="toThread('{{ thread[3] }}')">{{ thread[2] }}</button>
-    {{ thread[4] }}<br>
-    <i class="fa-regular fa-comments" aria-label="comments"></i> {{ thread[6] }}<br>
-
-    {% if session.user_id %}
-    <button onclick="pinThread('{{ thread[3] }}', 'pin_{{ thread[3] }}')">
-        {% if thread[8] %}
-        <i class="fa-solid fa-thumbtack" aria-label="unpin" data-is-pinned='true' 
-        style="color: #1c1c1c;" id="pin_{{ thread[3] }}"></i>
-        {% else %}
-        <i class="fa-solid fa-thumbtack" aria-label="pin" data-is-pinned='false' 
-        style="color: #9e9e9e;" id="pin_{{ thread[3] }}"></i>
-        {% endif %}
-    </button>
-
-    {% if thread[0] == session.user_id or is_admin %}
-    <button onclick="deleteMsgThreads('{{ thread[9] }}')">Delete</button><br>
-    {% endif %}
-    {% endif %}
+                {% if thread[0] == session.user_id or is_admin %}
+                <button class="btn btn-light btn-sm border ms-auto me-2" onclick="deleteMsgThreads('{{ thread[9] }}')">
+                    Delete
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
-<hr>
-{% endfor %}
 
-{% if thrds_left %}
-<button onclick="loadMore()">Load more</button>
-{% endif %}
+<div class="d-flex justify-content-center py-2 mt-4">
+    {% if thrds_left %}
+    <button class="btn btn-link link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover p-0 me-2" onclick="loadMore()">
+        Load more
+    </button>
+    {% endif %}
 
-{% if category == 'search' %}
-<a href="/threads/search/{{ order_by }}/{{ limit }}?query={{ request.args.query }}">
-{% else %}
-<a href="/threads/{{ category }}/{{ order_by }}/{{ limit }}">
-{% endif %}
-Back to the top</a>
+    {% if category == 'search' %}
+    <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover ms-2" href="/threads/search/{{ order_by }}/{{ limit }}?query={{ request.args.query }}">
+    {% else %}
+    <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover ms-2" href="/threads/{{ category }}/{{ order_by }}/{{ limit }}">
+    {% endif %}
+        Back to the top
+    </a>
+</div>
 
 {% if scroll_to %}
     <script>
@@ -76,7 +100,18 @@ Back to the top</a>
     </script>
 {% endif %}
 
+{% else %} 
+<div class="m-3 d-flex justify-content-center">
+    <p>No threads yet.</p>
+</div>
+{% endif %}
+
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const underline = document.getElementById('{{ order_by }}');
+        underline.className = 'me-2 link-dark link-offset-2 link-underline-opacity-100';
+    });
+
     const base_url =  window.location.origin;
 
     function saveThreadsUrl() {
@@ -112,8 +147,4 @@ Back to the top</a>
         window.location.assign(del_url);
     }  
 </script>
-
-{% else %} No threads yet.
-{% endif %}
-
 {% endblock %}

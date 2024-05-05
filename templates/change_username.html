@@ -1,12 +1,26 @@
 {% extends 'layout.html' %}
 {% block body %}
-
-<form action="/change_username", method="POST">
-    <label for="new_username">Choose your new username:</label><br>
-    <input type="text" name="username" id="new_username" value="{{ new_username }}"><br>
-    <input type="submit" value="Change">
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-</form><br>
-
-<a href="/user_settings">Go back</a>
+<div class="container start">
+    <div class="row">
+        <div class="col offset-lg-3 mb-2">
+            <a class="btn btn-light btn-sm border" href="/user_settings">
+                <i class="fa-solid fa-angle-left" aria-hidden="true"></i> Go back
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3 p-4 rounded" style="background-color: #fafafa;">
+            <form action="/change_username" method="POST">
+                <div class="form-group mb-2">
+                    <label class="form-label" for="new_username">Write your new username</label>
+                    <input class="form-control" type="text" name="username" id="new_username" value="{{ new_username }}" minlength="1" maxlength="25">
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-light border">Change</button>
+                </div>
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

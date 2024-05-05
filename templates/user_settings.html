@@ -1,10 +1,33 @@
 {% extends 'layout.html' %}
 {% block body %}
 
-Account created: {{ user_data[1].strftime("%Y-%m-%d %H:%M") }}<br>
-Username: {{ user_data[0] }}<br>
-<a href="/change_username">Change username</a><br>
-<a href="/delete/account">Delete account</a><br>
-<a href="/">Back</a>
+<div class="container start">
+    <div class="row">
+        <div class="offset-lg-3 mb-3">
+            <a class="btn btn-light btn-sm border" href="/">
+                <i class="fa-solid fa-angle-left" aria-hidden="true"></i> Go back
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="d-flex justify-content-center mb-3">
+            <h5>My account</h5>
+        </div>
+        <div class="col-lg-6 offset-lg-3 p-4 rounded" style="background-color: #fafafa;">
+            <div class="d-flex flex-column">
+                <p>Account created: {{ user_data[1].strftime("%Y-%m-%d %H:%M") }}</p>
+                <p>Username: {{ user_data[0] }}</p>
+                <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/change_username">
+                    Change username
+                </a>
+                <div class="d-flex justify-content-center">
+                    <a class="btn btn-outline-danger mt-3" href="/delete/account">
+                        Delete account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

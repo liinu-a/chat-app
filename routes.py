@@ -133,7 +133,7 @@ def delete(target, message_id=None, return_to=None):
                 else:
                     abort(403)
 
-        confirm = 'Are you sure? The deletion will be permanent.'
+        confirm = 'Are you sure? The deletion will be permanent!'
         return render_template('confirmation.html', confirm=confirm, target=target)
     
     if request.method == 'POST':
@@ -180,6 +180,9 @@ def update_topics(action):
             if len(topic) < 1:
                 flash("Please write the topic you'd like to add.", 'error')
                 return render_template('update_topics.html', action=action, value='')
+            if len(topic) > 20:
+                flash("The length of the topic should not exceed 20 characters.", 'error')
+                return render_template('update_topics.html', action=action, value='')
             if not topics.add_topic(topic):
                 flash('The topic you tried to add already exists. Please try again.', 'error')
                 return render_template('update_topics.html', action=action, value=topic)
@@ -221,21 +224,21 @@ def start_thread(back=None):
         users.check_csrf()
         title = request.form['title']
         message = request.form['message']
+        topic_id = request.form['topic']
 
         errors = False
-        if title == '' or 20 < len(title):
-            flash('Make sure the the length of the title is 1-20 characters.', 'error')
+        if title == '' or 50 < len(title):
+            flash('Make sure the the length of the title is 1-50 characters.', 'error')
             errors = True
         if len(message) > 10000:
             flash('Message exceeds the length limit of 10000 characters.', 'error')
             errors = True
-        if 'topic' not in request.form:
+        if topic_id == '':
             flash("Please choose a topic.", 'error')
             errors = True
         if errors:
             return render_template('add.html', add='thread', title=title, text=message, back=back)
         
-        topic_id = request.form['topic']
         message_id = messages.add_message(message)
         thread_id = threads.add_thread(topic_id, message_id, title)
 
@@ -275,8 +278,8 @@ def reply(thread_id, reply_to, message_id):
             reply_msg_id = messages.add_message(message)
             messages.add_reply(thread_id, reply_msg_id, message_id)
 
-            return redirect(session['thread_url'])
-        
+            return redirect(f'/thread/{thread_id}/most_recent/25')
+            
         return render_template('add.html', add='reply', reply_to=reply_to, thread_id=thread_id, 
                                message_id=message_id, text=message)
 

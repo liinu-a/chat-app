@@ -1,9 +1,21 @@
-<h1>About</h1>
-<p>
-    Chat-app is an application where it's users can have connect through shared interests, have debates and learn. 
-    By creating an account you'll be able to start discussions, pin the ones you are interested in and write replies.
-    However, an account isn't necessary if you are only intending on reading discussions and aren't interested in the additional features.
-    Please keep discussions to their respective topics and remain respectful towards other users. Bullying, harassment and threats of violence are forbidden.
-    Threads and replies may be removed if they violate these guidelines.
-</p>
-<a href="/">Back</a>
+{% extends 'layout.html' %}
+{% block body %}
+<div class="container start">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2 p-4 rounded" style="background-color: #fafafa;">
+            <h5>About</h5>
+            <p>
+                Chat-app is an application where it's users can have connect through shared interests, have debates and learn. 
+                By creating an account you'll be able to start discussions, pin the ones you are interested in and write replies.
+                However, an account isn't necessary if you are only intending on reading discussions and aren't interested in the additional features.
+                Please keep discussions to their respective topics and remain respectful towards other users. Bullying, harassment and threats of violence are forbidden.
+                Threads and replies may be removed if they violate these guidelines.
+            </p>
+            <a class="btn btn-light btn-sm border mt-2" href="/">
+                <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
+                Back
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

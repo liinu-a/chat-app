@@ -1,23 +1,42 @@
 {% extends 'layout.html' %}
 {% block body %}
-<form action="/{{ action }}_topic" method="POST">
 
-    {% if action == 'add' %}
-    <label for="topic">Topic:</label>
-    <input type="text" name="topic" id="topic" value="{{ value }}" minlength="1" maxlength="20"><br>
-    <input type="submit" value="Add">
-
-    {% elif action == 'remove' %}
-    Topics to remove:<br>
-    {% for topic in session.topics %}
-    <label for="{{ topic[0] }}">{{ topic[1] }}</label>
-    <input type="checkbox" name="topic" id="{{ topic[0] }}" value="{{ topic[1] }}"><br>
-    {% endfor %}<br>
-    <input type="submit" value="Remove">
-    {% endif %}
-
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-</form>
-
-<br><a href="/">Go back</a>
-{% endblock %}
+<div class="container start">
+    <div class="row">
+        <div class="col offset-lg-3 mb-2">
+            <a class="btn btn-light btn-sm border" href="/">
+                <i class="fa-solid fa-angle-left" aria-hidden="true"></i> Go back
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3 p-4 rounded" style="background-color: #fafafa;">
+            <form action="/{{ action }}_topic" method="POST">
+                {% if action == 'add' %}
+                <div class="form-group mb-2">
+                    <label class="form-label" for="topic">Write the topic you'd like to add</label>
+                    <input class="form-control" type="text" name="topic" id="topic" value="{{ value }}" minlength="1" maxlength="20">
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-light border mt-3">Add
+                {% elif action == 'remove' %}
+                <label class="form-label" for="remove-topics">Pick the topics to be removed</label>
+                <div class="d-flex flex-column ms-2" id="remove-topics">
+                    {% for topic in session.topics %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="topic" id="{{ topic[0] }}" value="{{ topic[1] }}">
+                        <label class="form-check-label" for="{{ topic[0] }}">{{ topic[1] }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-light border mt-3">Remove
+                {% endif %}
+                    </button>
+                </div>
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

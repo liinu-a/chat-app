@@ -3,22 +3,25 @@
 
 {% if session.user_id %}
 <div class="ms-auto" id="view-acc">
-    <a class="text-decoration-none" href="/user_settings">My account</a>
+    <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/user_settings">
+        My account
+    </a>
 </div>
-
 <div class="d-flex flex-column flex-xl-row justify-content-center align-items-center mb-5" id="options">
-    <div class="d-flex flex-column border rounded shadow option">
+    <div class="d-flex flex-column rounded shadow option">
         <h5>Explore discussions already started by other users</h5>
-        <div class="d-flex justify-content-between align-items-center h-100">
+        <div class="d-flex justify-content-between align-items-center flex-wrap h-100">
             {% if not shown_tpcs %}
             <p>No topics.</p>
-
             {% else %}
-            <a class="text-decoration-none" href="/threads/all/most_recent/25">All</a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/all/most_recent/25">
+                All
+            </a>
             {% for topic in shown_tpcs %}
-            <a class="text-decoration-none" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/{{ topic[1] }}/most_recent/25">
+                {{ topic[1] }}
+            </a>
             {% endfor %}
-    
             {% if listed_tpcs %}
             <div class="dropdown">
                 <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -33,7 +36,6 @@
             {% endif %}
             {% endif %}
         </div>
-
         {% if is_admin %} 
         <div class="d-flex">
             {% if shown_tpcs %} 
@@ -45,8 +47,7 @@
         </div>
         {% endif %}
     </div>
-        
-    <div class="m-4 border rounded shadow option">
+    <div class="m-4 rounded shadow option">
         <h5 class="mb-3">Talk about your interests, share your knowledge or ask questions</h5>
         {% if shown_tpcs %}
         <div class="d-flex justify-content-center">
@@ -58,28 +59,33 @@
         <p class="my-4">Currently no existing topics for discussions.</p>
         {% endif %}
     </div>
-
     <div class="border rounded shadow option">
         <h5>Personal to {{ session.username }}</h5>
         <div class="d-flex flex-column" id="user-threads">
-            <a class="text-decoration-none" href="/threads/pinned/most_recent/25">Pinned</a>
-            <a class="text-decoration-none" href="/threads/user/most_recent/25">My threads</a>
-            <a class="text-decoration-none" href="/threads/commented/most_recent/25">Threads I've commented on</a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/pinned/most_recent/25">
+                Pinned
+            </a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/user/most_recent/25">
+                My threads
+            </a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/commented/most_recent/25">
+                Threads I've commented on
+            </a>
         </div>
     </div>
 </div>
 {% else %}
 <div class="d-flex justify-content-center mb-5" id="options">
-    <div class="d-flex flex-column border rounded shadow option">
+    <div class="d-flex flex-column rounded shadow option">
         <h5>Explore discussions already started by other users</h5>
         <div class="d-flex justify-content-between align-items-center h-100">
             {% if not shown_tpcs %}
             <p>No topics.</p>
 
             {% else %}
-            <a class="text-decoration-none" href="/threads/all/most_recent/25">All</a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/all/most_recent/25">All</a>
             {% for topic in shown_tpcs %}
-            <a class="text-decoration-none" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
+            <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/threads/{{ topic[1] }}/most_recent/25">{{ topic[1] }}</a>
             {% endfor %}
     
             {% if listed_tpcs %}
@@ -99,7 +105,9 @@
     </div>
 </div>
 {% endif %}
-<div class="d-flex py-4 mt-auto" id="about" style="background-color: rgb(228, 228, 228);">
-    <a class="text-decoration-none" href="/about">About</a>  
+<div class="d-flex py-4 mt-auto" id="about" style="background-color: #faf7ee;">
+    <a class="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" href="/about">
+        About
+    </a>  
 </div>
 {% endblock %}

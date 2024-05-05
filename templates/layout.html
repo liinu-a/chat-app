@@ -14,7 +14,7 @@
     <body class="d-flex justify-content-center">
         {% with messages = get_flashed_messages() %}
         {% if messages %}
-        <div class="alert alert-light alert-dismissible fade show position-fixed z-3 mt-3" role="alert">
+        <div class="alert alert-info alert-dismissible fade show position-fixed z-3 mt-3" role="alert">
             {% for message in messages %}
             {{ message }}
             {% endfor %}

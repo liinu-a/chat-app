@@ -1,38 +1,64 @@
 {% extends 'layout.html' %}
 {% block body %}
 
-{% if add == 'thread' %}
-<form action="/start_thread/{{ back }}" method="POST">
-    <label for="title">Write a title for your post:</label>
-    <input type="text" name="title" id="title" value="{{ title }}" minlength="1" maxlength="20"><br>
-
-{% elif add == 'reply' %}
-<form action="/reply/{{ thread_id }}/{{ reply_to }}/{{ message_id }}" method="POST">
-    Reply to:<br>
-    {{ session.reply_to_msg[0] }} | {{ session.reply_to_msg[2].strftime("%Y-%m-%d %H:%M") }}<br>
-    {% if reply_to == 'thread' %}
-    {{ session.reply_to_msg[3] }}<br>
-    {% endif %}
-    {{ session.reply_to_msg[1] }}<br>
-{% endif %}
-
-    <label for="message">What would you like to say?</label>
-    <textarea name="message" id="message" maxlength="10000">{{ text }}</textarea><br>
-    
-    {% if add == 'thread' %}
-    Choose a topic:<br>
-    {% for topic in session.tpcs %}
-    <label for="{{ topic[0] }}">{{ topic[1] }}</label>
-    <input type="radio" name="topic" id="{{ topic[0] }}" value="{{ topic[0] }}"><br>
-    {% endfor %}
-    <input type="submit" value="Start"><br>
-    <a href="{{ session.threads_url }}">Go back</a>
-
-    {% elif add == 'reply' %}
-    <input type="submit" value="Reply">
-    <a href="{{ session.thread_url }}">Go back</a>
-    {% endif %}
-
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-</form>
+<div class="container start">
+    <div class="row">
+        <div class="col offset-lg-2 mb-2">
+            {% if add == 'thread' %}
+            <a class="btn btn-light btn-sm border" href="{{ session.threads_url }}">
+            {% elif add == 'reply' %}
+            <a class="btn btn-light btn-sm border" href="{{ session.thread_url }}">
+            {% endif %}
+            <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
+            Go back</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2 p-4 rounded" style="background-color: #fafafa;">
+            {% if add == 'thread' %}
+            <form action="/start_thread/{{ back }}" method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="title">Write a title for your post</label>
+                    <input class="form-control" type="text" name="title" id="title" value="{{ title }}" minlength="1" maxlength="50">
+                </div>
+            {% elif add == 'reply' %}
+            <form action="/reply/{{ thread_id }}/{{ reply_to }}/{{ message_id }}" method="POST">
+                <label class="form-label" for="reply_to">Write a reply to</label>
+                <div class="p-3 mx-3 mb-2 rounded-end" id="reply_to" style="border-left: 3px solid rgb(168, 168, 168); background-color: #ebebeb;">
+                    <p>{{ session.reply_to_msg[0] }} &middot {{ session.reply_to_msg[2].strftime("%Y-%m-%d %H:%M") }}</p>
+                    {% if reply_to == 'thread' %}
+                    <h5>{{ session.reply_to_msg[3] }}</h5>
+                    {% endif %}
+                    <i>{{ session.reply_to_msg[1] }}</i>
+                </div>
+            {% endif %}
+                <div class="form-group mt-2">
+                    <label class="form-label" for="message">What would you like to say?</label>
+                    <textarea class="form-control" name="message" id="message" rows="4" maxlength="10000">{{ text }}</textarea>
+                </div>
+                {% if add == 'thread' %}
+                <div class="form-group mt-2">
+                    <div class="col-md-3">
+                        <label class="sr-only" for="formSelect">Topic of discussion</label>
+                        <select class="form-select" id="formSelect" name="topic">
+                            <option value="" selected>Topic...</option>
+                            {% for topic in session.tpcs %}
+                            <option value="{{ topic[0] }}">{{ topic[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center mt-3">
+                    <button class="btn btn-light border" type="submit">Start
+                    {% elif add == 'reply' %}
+                <div class="d-flex justify-content-center mt-3">
+                    <button class="btn btn-light border" type="submit">Reply
+                    {% endif %}
+                    </button>
+                </div>
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
